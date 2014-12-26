@@ -1,0 +1,9 @@
+scribble
+========
+
+Framework & AI engine for Scrabble-based word games.
+
+Currently includes: 
+* A script for training dictionary knowledge - guess whether a word is in the game's dictionary. 
+  Run tools/litrain.pl --man for help.
+  
