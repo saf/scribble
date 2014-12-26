@@ -7,3 +7,8 @@ Currently includes:
 * A script for training dictionary knowledge - guess whether a word is in the game's dictionary. 
   Run tools/litrain.pl --man for help.
   
+REQUIREMENTS
+============
+
+The following OS packages will be required to use the programs and tools in this repository:
+ * perl-doc   for viewing man-pages of Perl scripts.
