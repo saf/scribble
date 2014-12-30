@@ -87,9 +87,9 @@ my $help = 0;
 my $man = 0;
 
 GetOptions(
-    'max-length|l' => \$max_length,
-    'max-alternations|a' => \$max_alternations,
-    'output|o' => \$output_filename,
+    'max-length|l:i' => \$max_length,
+    'max-alternations|a:i' => \$max_alternations,
+    'output|o:s' => \$output_filename,
 
     'help|h' => \$help,
     'man|m' => \$man,
