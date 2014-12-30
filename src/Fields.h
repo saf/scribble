@@ -12,15 +12,15 @@
 
 class PlainField : public Field {
 public:
-	virtual void applyScore(Tile &tile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
+	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
 		score += tile.getPoints();
 	}
 };
 
 template <int bonus> class MultiplicativeLetterBonusField : public Field {
 public:
-	virtual void applyScore(Tile &tile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
-		score += tile.getPoints() * bonus;
+	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
+		score += tile.getPoints() * (newTile ? bonus : 1);
 	}
 };
 
@@ -30,16 +30,18 @@ private:
 		score *= factor;
 	}
 public:
-	virtual void applyScore(Tile &tile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
+	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
 		score += tile.getPoints();
-		wordScoreFuncs.push_back(multiplyWordScore);
+		if (newTile) {
+			wordScoreFuncs.push_back(multiplyWordScore);
+		}
 	}
 };
 
 template <int color, int factor> class ColoredField : public Field {
 public:
-	virtual void applyScore(Tile &tile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
-		if (tile.getColor() == color) {
+	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
+		if (newTile && tile.getColor() == color) {
 			score += factor * tile.getPoints();
 		} else {
 			score += tile.getPoints();

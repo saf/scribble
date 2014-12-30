@@ -9,6 +9,7 @@
 #define FIELD_H_
 
 #include <vector>
+#include "Tile.h"
 
 typedef void (wordScoreFunc)(int &score);
 
@@ -27,7 +28,7 @@ public:
 	 *    This is realized by queueing a wordScoreFunc, which will be called after
 	 *    this routine has been called for all fields.
 	 */
-	virtual void applyScore(Tile &tile, int &score, std::vector<wordScoreFunc> &wordScoreFuncs);
+	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc> &wordScoreFuncs);
 };
 
 #endif /* FIELD_H_ */
