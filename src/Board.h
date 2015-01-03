@@ -36,7 +36,10 @@ public:
 	virtual ~Board();
 
 	void setField(int row, int col, Field *field);
-	Field *getField(int row, int col);
+	const Field *getField(int row, int col);
+
+	void setTile(int row, int col, Tile *tile);
+	const Tile *getTile(int row, int col);
 
 	bool checkMove(Move &move);
 	int getMoveScore(Move &move);

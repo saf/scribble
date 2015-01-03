@@ -33,7 +33,8 @@ public:
 	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
 		score += tile.getPoints();
 		if (newTile) {
-			wordScoreFuncs.push_back(multiplyWordScore);
+			wordScoreFunc *f = multiplyWordScore;
+			wordScoreFuncs.push_back(f);
 		}
 	}
 };

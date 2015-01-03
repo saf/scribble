@@ -15,8 +15,7 @@ typedef void (wordScoreFunc)(int &score);
 
 class Field {
 public:
-	Field();
-	virtual ~Field();
+	virtual ~Field() {};
 
 	/* Fields may influence the score for a word in two ways:
 	 *  - modifying the 'score' while the word is being traversed
@@ -28,7 +27,7 @@ public:
 	 *    This is realized by queueing a wordScoreFunc, which will be called after
 	 *    this routine has been called for all fields.
 	 */
-	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc> &wordScoreFuncs);
+	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) = 0;
 };
 
 #endif /* FIELD_H_ */

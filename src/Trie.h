@@ -36,7 +36,7 @@ private:
 	Alphabet *alphabet;
 public:
 	Trie(Alphabet &alphabet);
-	virtual ~Trie();
+	virtual ~Trie() {};
 
 	void insert(std::wstring &word);
 	bool find(std::wstring &word);
