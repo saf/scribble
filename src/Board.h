@@ -31,6 +31,13 @@ private:
 
 	int getNewWordScore(std::vector<Tile *> *tiles, int row, int col, Move::Direction direction, int tileIndex = -1);
 public:
+	class InvalidMove : public std::exception {
+	public:
+		const char *what() {
+			return "Board::applyMove called with an invalid move.";
+		}
+	};
+
 	Board(int rows, int cols);
 	Board(const Board &board);
 	virtual ~Board();

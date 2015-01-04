@@ -183,7 +183,7 @@ void Board::applyMove(Move &move) {
 	std::vector<Tile *> *tiles = move.getTiles();
 
 	if (!this->checkMove(move)) {
-		throw "Board::applyMove requested to apply invalid move for this board.";
+		throw InvalidMove();
 	}
 
 	for (std::vector<Tile *>::const_iterator it = tiles->begin(); it != tiles->end(); it++) {
