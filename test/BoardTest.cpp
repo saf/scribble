@@ -23,7 +23,7 @@ struct MoveManagementTestSetup {
 		startTiles.push_back(new Tile(L'Ł', 3));
 
 		zaTiles.push_back(new Tile(L'Z', 2));
-		zaTiles.push_back(new Tile(L'E', 1));
+		zaTiles.push_back(new Tile(L'A', 1));
 	}
 };
 
@@ -119,5 +119,184 @@ BOOST_AUTO_TEST_SUITE_END();
 
 BOOST_FIXTURE_TEST_SUITE(checkSecondMove, MoveManagementTestSetup);
 
+BOOST_AUTO_TEST_CASE(checkVerticalCrossInsideBoard) {
+	Move m1(1, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(0, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkVerticalAddTopInsideBoard) {
+	Move m1(2, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(0, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkVerticalAddBottomInsideBoard) {
+	Move m1(0, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(1, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkVerticalCrossOutsideBoard) {
+	Move m1(4, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(3, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(!b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkVerticalAddTopAtBorder) {
+	Move m1(4, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(2, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkHorizontalCrossInsideBoard) {
+	Move m1(0, 1, Move::VERTICAL, &startTiles);
+	Move m2(0, 0, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkHorizontalAddLeftInsideBoard) {
+	Move m1(0, 2, Move::VERTICAL, &startTiles);
+	Move m2(0, 0, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkHorizontalAddRightInsideBoard) {
+	Move m1(0, 0, Move::VERTICAL, &startTiles);
+	Move m2(0, 1, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkHorizontalCrossOutsideBoard) {
+	Move m1(0, 3, Move::VERTICAL, &startTiles);
+	Move m2(0, 2, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(!b.checkMove(m2));
+}
+
+BOOST_AUTO_TEST_CASE(checkHorizontalAddLeftAtBorder) {
+	Move m1(0, 3, Move::VERTICAL, &startTiles);
+	Move m2(0, 1, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK(b.checkMove(m2));
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 
+BOOST_FIXTURE_TEST_SUITE(secondMovePlacement, MoveManagementTestSetup);
+
+BOOST_AUTO_TEST_CASE(verticalCrossInsideBoard) {
+	Move m1(1, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(0, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(0, 0)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(2, 0)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_CASE(verticalAddTopInsideBoard) {
+	Move m1(2, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(0, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(0, 0)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(1, 0)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_CASE(verticalAddBottomInsideBoard) {
+	Move m1(0, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(1, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(1, 0)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(2, 0)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_CASE(verticalCrossOutsideBoard) {
+	Move m1(4, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(3, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_THROW(b.applyMove(m2), Board::InvalidMove);
+}
+
+BOOST_AUTO_TEST_CASE(verticalAddTopAtBorder) {
+	Move m1(4, 0, Move::HORIZONTAL, &startTiles);
+	Move m2(2, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(2, 0)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(3, 0)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_CASE(horizontalCrossInsideBoard) {
+	Move m1(0, 1, Move::VERTICAL, &startTiles);
+	Move m2(0, 0, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(0, 0)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(0, 2)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_CASE(horizontalAddLeftInsideBoard) {
+	Move m1(0, 2, Move::VERTICAL, &startTiles);
+	Move m2(0, 0, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(0, 0)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(0, 1)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_CASE(horizontalAddRightInsideBoard) {
+	Move m1(0, 0, Move::VERTICAL, &startTiles);
+	Move m2(0, 1, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(0, 1)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(0, 2)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_CASE(horizontalCrossOutsideBoard) {
+	Move m1(0, 3, Move::VERTICAL, &startTiles);
+	Move m2(0, 2, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_THROW(b.applyMove(m2), Board::InvalidMove);
+}
+
+BOOST_AUTO_TEST_CASE(horizontalAddLeftAtBorder) {
+	Move m1(0, 3, Move::VERTICAL, &startTiles);
+	Move m2(0, 1, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	b.applyMove(m2);
+	BOOST_CHECK(b.getTile(0, 1)->getLetter() == L'Z');
+	BOOST_CHECK(b.getTile(0, 2)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_SUITE_END();
