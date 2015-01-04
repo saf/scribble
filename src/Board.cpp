@@ -182,17 +182,21 @@ void Board::applyMove(Move &move) {
 	int col = move.getStartColumn();
 	std::vector<Tile *> *tiles = move.getTiles();
 
+	if (!this->checkMove(move)) {
+		throw "Board::applyMove requested to apply invalid move for this board.";
+	}
+
 	for (std::vector<Tile *>::const_iterator it = tiles->begin(); it != tiles->end(); it++) {
 		this->putTile(row, col, **it);
 
 		if (direction == Move::HORIZONTAL) {
 			col++;
-			while (this->tiles[row][col] != NULL) {
+			while (col < this->width && this->tiles[row][col] != NULL) {
 				col++;
 			}
 		} else {
 			row++;
-			while (this->tiles[row][col] != NULL) {
+			while (row < this->height && this->tiles[row][col] != NULL) {
 				row++;
 			}
 		}
