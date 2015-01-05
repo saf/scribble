@@ -6,6 +6,8 @@
 #include "Board.h"
 #include "Fields.h"
 
+enum colors { PLAIN, YELLOW, GREEN, BLUE, RED };
+
 struct MoveManagementTestSetup {
 	Board b;
 	std::vector<Tile *> startTiles;
@@ -18,12 +20,12 @@ struct MoveManagementTestSetup {
 			}
 		}
 
-		startTiles.push_back(new Tile(L'D', 2));
-		startTiles.push_back(new Tile(L'Ą', 5));
-		startTiles.push_back(new Tile(L'Ł', 3));
+		startTiles.push_back(new Tile(L'D', 2, GREEN));
+		startTiles.push_back(new Tile(L'Ą', 5, RED));
+		startTiles.push_back(new Tile(L'Ł', 3, BLUE));
 
-		zaTiles.push_back(new Tile(L'Z', 2));
-		zaTiles.push_back(new Tile(L'A', 1));
+		zaTiles.push_back(new Tile(L'Z', 2, YELLOW));
+		zaTiles.push_back(new Tile(L'A', 1, YELLOW));
 	}
 };
 
@@ -297,6 +299,160 @@ BOOST_AUTO_TEST_CASE(horizontalAddLeftAtBorder) {
 	b.applyMove(m2);
 	BOOST_CHECK(b.getTile(0, 1)->getLetter() == L'Z');
 	BOOST_CHECK(b.getTile(0, 2)->getLetter() == L'A');
+}
+
+BOOST_AUTO_TEST_SUITE_END();
+
+struct MoveScoringTestSetup {
+	Board b;
+	std::vector<Tile *> dalTiles;
+	std::vector<Tile *> zaTiles;
+
+	MoveScoringTestSetup() : b(9, 9) {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				if (i == 3 && j == 3) {
+					b.setField(i, j, new MultiplicativeWordBonusField<3>());
+				} else if (i == 5 && j == 3) {
+					b.setField(i, j, new ColoredField<GREEN, 3>());
+				} else if (i == 3 && j == 5) {
+					b.setField(i, j, new MultiplicativeLetterBonusField<3>());
+				} else {
+					b.setField(i, j, new PlainField());
+				}
+			}
+		}
+
+		dalTiles.push_back(new Tile(L'D', 2, GREEN));
+		dalTiles.push_back(new Tile(L'Ą', 5, RED));
+		dalTiles.push_back(new Tile(L'Ł', 3, BLUE));
+
+		zaTiles.push_back(new Tile(L'Z', 2, YELLOW));
+		zaTiles.push_back(new Tile(L'A', 1, YELLOW));
+	}
+};
+
+BOOST_FIXTURE_TEST_SUITE(firstMoveScoring, MoveScoringTestSetup);
+
+BOOST_AUTO_TEST_CASE(plainHorizontalMove) {
+	Move m(0, 0, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 10);
+}
+
+BOOST_AUTO_TEST_CASE(plainVerticalMove) {
+	Move m(0, 0, Move::VERTICAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 10);
+}
+
+BOOST_AUTO_TEST_CASE(tripledHorizontalMoveInsideBonus) {
+	Move m(3, 2, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 30);
+}
+
+BOOST_AUTO_TEST_CASE(tripledVerticalMoveInsideBonus) {
+	Move m(2, 3, Move::VERTICAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 30);
+}
+
+BOOST_AUTO_TEST_CASE(tripledHorizontalMoveEndBonus) {
+	Move m(3, 1, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 30);
+}
+
+BOOST_AUTO_TEST_CASE(tripledVerticalMoveEndBonus) {
+	Move m(1, 3, Move::VERTICAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 30);
+}
+
+BOOST_AUTO_TEST_CASE(tripledLetterHorizontalMoveStartBonus) {
+	Move m(3, 5, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 14);
+}
+
+BOOST_AUTO_TEST_CASE(tripledLetterVerticalMoveStartBonus) {
+	Move m(3, 5, Move::VERTICAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 14);
+}
+
+BOOST_AUTO_TEST_CASE(tripledLetterHorizontalMoveInsideBonus) {
+	Move m(3, 4, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 20);
+}
+
+BOOST_AUTO_TEST_CASE(tripledLetterVerticalMoveInsideBonus) {
+	Move m(2, 5, Move::VERTICAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 20);
+}
+
+BOOST_AUTO_TEST_CASE(coloredLetterHorizontalMoveWithBonus) {
+	Move m(5, 3, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 14);
+}
+
+BOOST_AUTO_TEST_CASE(coloredLetterVerticalMoveWithBonus) {
+	Move m(5, 3, Move::VERTICAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 14);
+}
+
+BOOST_AUTO_TEST_CASE(coloredLetterHorizontalMoveWithoutBonus) {
+	Move m(5, 2, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 10);
+}
+
+BOOST_AUTO_TEST_CASE(coloredLetterVerticalMoveWithoutBonus) {
+	Move m(4, 3, Move::VERTICAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 10);
+}
+
+BOOST_AUTO_TEST_CASE(combinedBonusHorizontal) {
+	Move m(3, 3, Move::HORIZONTAL, &dalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 48);
+}
+
+BOOST_AUTO_TEST_CASE(combinedBonusVertical) {
+	std::vector<Tile *> revDalTiles;
+	revDalTiles.reserve(dalTiles.size());
+	for (std::vector<Tile *>::reverse_iterator rit = dalTiles.rbegin(); rit != dalTiles.rend(); rit++) {
+		revDalTiles.push_back(*rit);
+	}
+	Move m(3, 3, Move::VERTICAL, &revDalTiles);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m), 42);
+}
+
+BOOST_AUTO_TEST_SUITE_END();
+
+BOOST_FIXTURE_TEST_SUITE(nextMoveScoring, MoveScoringTestSetup);
+
+BOOST_AUTO_TEST_CASE(plainVerticalAddTop) {
+	Move m1(2, 0, Move::HORIZONTAL, &dalTiles);
+	Move m2(0, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 5);
+}
+
+BOOST_AUTO_TEST_CASE(plainHorizontalAddLeft) {
+	Move m1(0, 2, Move::VERTICAL, &dalTiles);
+	Move m2(0, 0, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 5);
+}
+
+BOOST_AUTO_TEST_CASE(plainVerticalIntersect) {
+	Move m1(1, 0, Move::HORIZONTAL, &dalTiles);
+	Move m2(0, 1, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 8);
+}
+
+BOOST_AUTO_TEST_CASE(plainHorizontalIntersect) {
+	Move m1(0, 1, Move::VERTICAL, &dalTiles);
+	Move m2(1, 0, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 8);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
