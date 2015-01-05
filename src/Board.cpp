@@ -91,12 +91,13 @@ bool Board::checkMove(Move &move) {
 	return true;
 }
 
-int Board::getNewWordScore(std::vector<Tile *> *tiles, int startRow, int startColumn, enum Move::Direction direction, int tileIndex) {
+int Board::getNewWordScore(std::vector<Tile *> *wordTiles, int startRow, int startColumn, enum Move::Direction direction, int tileIndex) {
 	int score = 0;
 	std::vector<wordScoreFunc *> wordScoreFuncs;
 	wordScoreFuncs.reserve(5);
 	int row = startRow - (direction == Move::VERTICAL ? 1 : 0);
 	int col = startColumn - (direction == Move::HORIZONTAL ? 1 : 0);
+	bool expansionFound = false;
 
 	/* Account for existing tiles 'before' our tile in the new word */
 	while (col >= 0 && row >= 0 && this->tiles[row][col] != NULL) {
@@ -106,42 +107,57 @@ int Board::getNewWordScore(std::vector<Tile *> *tiles, int startRow, int startCo
 		} else {
 			row--;
 		}
+		expansionFound = true;
 	}
 
 	row = startRow;
 	col = startColumn;
 	if (tileIndex == -1) {
-		for (std::vector<Tile *>::const_iterator it = tiles->begin(); it != tiles->end(); it++) {
+		for (std::vector<Tile *>::const_iterator it = wordTiles->begin(); it != wordTiles->end(); it++) {
 			this->fields[row][col]->applyScore(**it, true, score, wordScoreFuncs);
 
 			if (direction == Move::HORIZONTAL) {
 				col++;
 				while (col < this->width && this->tiles[row][col] != NULL) {
-					this->fields[row][col]->applyScore(*tiles[row][col], false, score, wordScoreFuncs);
+					this->fields[row][col]->applyScore(*this->tiles[row][col], false, score, wordScoreFuncs);
 					col++;
 				}
 			} else {
 				row++;
 				while (row < this->height && this->tiles[row][col] != NULL) {
-					this->fields[row][col]->applyScore(*tiles[row][col], false, score, wordScoreFuncs);
+					this->fields[row][col]->applyScore(*this->tiles[row][col], false, score, wordScoreFuncs);
+					row++;
 				}
 			}
 		}
 	} else {
-		this->fields[row][col]->applyScore(*tiles->at(tileIndex), true, score, wordScoreFuncs);
+		/* Skip our new letter for now. If we find an expansion into a word to which this letter
+		 * contributes, it will be accounted for at the end of this function. */
+		if (direction == Move::HORIZONTAL) {
+			col++;
+		} else {
+			row++;
+		}
 	}
 
 	if (direction == Move::HORIZONTAL) {
 		col++;
 		while (col < this->width && this->tiles[row][col] != NULL) {
-			this->fields[row][col]->applyScore(*tiles[row][col], false, score, wordScoreFuncs);
+			this->fields[row][col]->applyScore(*this->tiles[row][col], false, score, wordScoreFuncs);
+			expansionFound = true;
 			col++;
 		}
 	} else {
 		row++;
 		while (row < this->height && this->tiles[row][col] != NULL) {
-			this->fields[row][col]->applyScore(*tiles[row][col], false, score, wordScoreFuncs);
+			this->fields[row][col]->applyScore(*this->tiles[row][col], false, score, wordScoreFuncs);
+			expansionFound = true;
+			row++;
 		}
+	}
+
+	if (tileIndex != -1 && expansionFound) {
+		this->fields[row][col]->applyScore(*wordTiles->at(tileIndex), true, score, wordScoreFuncs);
 	}
 
 	for (std::vector<wordScoreFunc *>::const_iterator it = wordScoreFuncs.begin(); it != wordScoreFuncs.end(); it++) {
@@ -168,8 +184,14 @@ int Board::getMoveScore(Move &move) {
 
 		if (direction == Move::HORIZONTAL) {
 			col++;
+			while (col < this->width && this->tiles[row][col] != NULL) {
+				col++;
+			}
 		} else {
 			row++;
+			while (row < this->height && this->tiles[row][col] != NULL) {
+				row++;
+			}
 		}
 	}
 

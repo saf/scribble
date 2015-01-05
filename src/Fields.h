@@ -26,14 +26,14 @@ public:
 
 template <int factor> class MultiplicativeWordBonusField : public Field {
 private:
-	void multiplyWordScore(int &score) {
+	static void multiplyWordScore(int &score) {
 		score *= factor;
 	}
 public:
 	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
 		score += tile.getPoints();
 		if (newTile) {
-			wordScoreFunc *f = multiplyWordScore;
+			wordScoreFunc *f = &multiplyWordScore;
 			wordScoreFuncs.push_back(f);
 		}
 	}
