@@ -13,14 +13,14 @@
 #include "Alphabets.h"
 
 class Trie {
-private:
+protected:
 	class Node {
-	private:
+	protected:
 		Node *parent;
 		std::vector<Node *> *children;
 		bool final;
 	public:
-		Node(int childCount);
+		Node(int childCount, Node *parent = NULL);
 		~Node();
 
 		void insert(int index, Node *child);
@@ -33,13 +33,16 @@ private:
 	};
 
 	Node root;
-	Alphabet *alphabet;
+	const Alphabet *alphabet;
 public:
-	Trie(Alphabet &alphabet);
+	Trie(const Alphabet &alphabet);
 	virtual ~Trie();
 
 	void insert(std::wstring &word);
+	void insert(const wchar_t *word);
+
 	bool find(std::wstring &word);
+	bool find(const wchar_t *word);
 };
 
 #endif /* TRIE_H_ */

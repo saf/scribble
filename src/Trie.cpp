@@ -7,10 +7,10 @@
 
 #include "Trie.h"
 
-Trie::Node::Node(int childCount) {
+Trie::Node::Node(int childCount, Node *parent) {
 	this->children = new std::vector<Node *>(childCount);
 	this->final = false;
-	this->parent = NULL;
+	this->parent = parent;
 }
 
 Trie::Node::~Node() {
@@ -37,7 +37,7 @@ void Trie::Node::setFinal() {
 	this->final = true;
 }
 
-Trie::Trie(Alphabet &alphabet) : alphabet(&alphabet), root(alphabet.getLetterCount()) {}
+Trie::Trie(const Alphabet &alphabet) : alphabet(&alphabet), root(alphabet.getLetterCount()) {}
 
 Trie::~Trie() {}
 
@@ -48,12 +48,17 @@ void Trie::insert(std::wstring &word) {
 		int index = this->alphabet->getIndex(ch);
 		Node *child = node->find(index);
 		if (child == NULL) {
-			child = new Node(this->alphabet->getLetterCount());
+			child = new Node(this->alphabet->getLetterCount(), node);
 			node->insert(index, child);
 		}
 		node = child;
 	}
 	node->setFinal();
+}
+
+void Trie::insert(const wchar_t *word) {
+	std::wstring s(word);
+	this->insert(s);
 }
 
 bool Trie::find(std::wstring &word) {
@@ -69,4 +74,9 @@ bool Trie::find(std::wstring &word) {
 		}
 	}
 	return node->isFinal();
+}
+
+bool Trie::find(const wchar_t *word) {
+	std::wstring s(word);
+	return this->find(s);
 }
