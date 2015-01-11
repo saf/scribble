@@ -13,6 +13,9 @@
 #include "Alphabets.h"
 
 class Trie {
+public:
+	static const long int MAX_WORD_LENGTH = 40;
+
 protected:
 	class Node {
 	protected:
@@ -26,7 +29,7 @@ protected:
 		void insert(int index, Node *child);
 		Node *find(int index);
 
-		Node *getParent();
+		Node *getParent() const;
 
 		bool isFinal();
 		void setFinal();
@@ -34,7 +37,12 @@ protected:
 
 	Node root;
 	const Alphabet *alphabet;
+
+	int lastInsertedLength;
+	Node *lastInsertedNode;
+	wchar_t lastInsertedWord[MAX_WORD_LENGTH];
 public:
+
 	Trie(const Alphabet &alphabet);
 	virtual ~Trie();
 

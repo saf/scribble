@@ -17,7 +17,6 @@ protected:
 	Trie *tree;
 	int size;
 
-	static const long int MAX_WORD_LENGTH = 40;
 public:
 	Dictionary(const Alphabet &alphabet);
 	virtual ~Dictionary();

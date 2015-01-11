@@ -28,7 +28,7 @@ int Alphabet::getIndex(unsigned wchar_t letter) const {
 	throw std::string("Failed to find index for code point.");
 }
 
-PolishAlphabet::PolishAlphabet() : Alphabet(std::wstring(L"ĄĆĘŁŃÓŚŹŻ")) {};
+PolishAlphabet::PolishAlphabet() : Alphabet(std::wstring(L"ĄĆĘŁŃÓŚŹŻ#")) {};
 
-EnglishAlphabet::EnglishAlphabet() : Alphabet(std::wstring(L"")) {};
+EnglishAlphabet::EnglishAlphabet() : Alphabet(std::wstring(L"#")) {};
 

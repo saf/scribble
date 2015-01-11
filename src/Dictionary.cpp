@@ -19,8 +19,8 @@ Dictionary::~Dictionary() {
 
 void Dictionary::readFromStream(std::wistream &s) {
 	while (!s.eof()) {
-		wchar_t word[MAX_WORD_LENGTH];
-		s.getline(word, MAX_WORD_LENGTH);
+		wchar_t word[Trie::MAX_WORD_LENGTH];
+		s.getline(word, Trie::MAX_WORD_LENGTH);
 
 		tree->insert(word);
 		this->size++;
