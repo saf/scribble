@@ -12,48 +12,69 @@
 
 class Game {
 public:
-	class Decision {
-	private:
+	struct Decision {
+	public:
 		enum Type { MOVE, EXCHANGE, PASS };
-		Type type;
-		union {
+		union Data {
 			Move *move;                          /* for MOVE decisions */
 			std::vector<Tile *> *exchangedTiles; /* for EXCHANGE decisions */
 		};
 
-	public:
-		Decision()
+		Type type;
+		Data data;
+
+		Decision(enum Type type, union Data data);
+		Decision(Move *move);
 	};
 
 	class State {
 	private:
-		int turn; /* cycles through 0, 1, (2, 3) */
+		Game &game;
+		int turn; /* cycles through 0 ... (playerCount-1) */
 		Board board;
 		std::set<Tile *> bag;
-		std::set<Tile *> *racks;
-		int *scores;
+		std::vector<std::set<Tile *> > racks;
+		std::vector<int> scores;
+
+		const std::set<Tile *> &getRack(int playerId) const;
+		void setRack(int playerId, const std::set<Tile *> &tiles);
+		void repopulateRack(int playerId);
+
 	public:
-		State(int playerCount, Board &board, std::set<Tile *> &bag);
+		State(Game &game, Board &board, std::set<Tile *> &bag);
 		State(const State &state);
 		State& operator=(const State &state);
 		virtual ~State();
 
 		void applyDecision(const Decision &decision);
 
-		const Board& getBoard();
-		const std::set<Tile *>& getBag();
-		const std::set<Tile *>& getRack(); /* Returns rack for current player */
-		const int *getScores();
+		const Board& getBoard() const;
+		const std::set<Tile *>& getRack() const ; /* Returns rack for current player */
+		const std::vector<int>& getScores() const;
+		int getPlayerCount() const;
+
+		bool isFinal() const;
 	};
 
 private:
-	State currentState;
+	std::vector<Player *> players;
+
+	State *currentState;
 	std::vector<State *> stateHistory;
 	std::vector<Decision *> decisionHistory;
 
+	virtual void getInitialBoard() = 0;
+	virtual void getInitialBag() = 0;
+
 public:
-	Game(int playerCount);
+	Game(int playerCount, std::vector<Player *> &players);
 	virtual ~Game();
+
+	virtual void getRackSize() = 0;
+	int getPlayerCount() const;
+
+	void oneStep();
+	void play();
 };
 
 #endif /* GAME_H_ */
