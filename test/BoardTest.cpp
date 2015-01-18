@@ -455,4 +455,172 @@ BOOST_AUTO_TEST_CASE(plainHorizontalIntersect) {
 	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 8);
 }
 
+BOOST_AUTO_TEST_CASE(doubleColorBonusOrthVertical) {
+	Move m1(5, 4, Move::HORIZONTAL, &zaTiles);
+	Move m2(5, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 23);
+}
+
+BOOST_AUTO_TEST_CASE(doubleColorBonusOrthHorizontal) {
+	Move m1(6, 3, Move::VERTICAL, &zaTiles);
+	Move m2(5, 3, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 23);
+}
+
+BOOST_AUTO_TEST_CASE(colorBonusParallelVertical) {
+	Move m1(4, 4, Move::VERTICAL, &zaTiles);
+	Move m2(5, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 21);
+}
+
+BOOST_AUTO_TEST_CASE(colorBonusParallelHorizontal) {
+	Move m1(4, 2, Move::HORIZONTAL, &zaTiles);
+	Move m2(5, 3, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 21);
+}
+
+BOOST_AUTO_TEST_CASE(colorBonusOrthVertical) {
+	Move m1(4, 2, Move::HORIZONTAL, &zaTiles);
+	Move m2(5, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 15);
+}
+
+BOOST_AUTO_TEST_CASE(colorBonusOrthHorizontal) {
+	Move m1(4, 2, Move::VERTICAL, &zaTiles);
+	Move m2(5, 3, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 15);
+}
+
+BOOST_AUTO_TEST_CASE(doubleWordBonusVerticalStart) {
+	Move m1(3, 1, Move::HORIZONTAL, &zaTiles);
+	Move m2(3, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 45);
+}
+
+BOOST_AUTO_TEST_CASE(doubleWordBonusVerticalMid) {
+	Move m1(3, 1, Move::HORIZONTAL, &zaTiles);
+	Move m2(2, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 54);
+}
+
+BOOST_AUTO_TEST_CASE(doubleWordBonusHorizontalMid) {
+	Move m1(1, 3, Move::VERTICAL, &zaTiles);
+	Move m2(3, 2, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 54);
+}
+
+BOOST_AUTO_TEST_CASE(doubleWordBonusHorizontalEnd) {
+	Move m1(1, 3, Move::VERTICAL, &zaTiles);
+	Move m2(3, 1, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 48);
+}
+
+BOOST_AUTO_TEST_CASE(doubleWordBonusVerticalEnd) {
+	Move m1(3, 1, Move::HORIZONTAL, &zaTiles);
+	Move m2(1, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 48);
+}
+
+BOOST_AUTO_TEST_CASE(wordBonusOrthHorizontal) {
+	Move m1(2, 1, Move::VERTICAL, &zaTiles);
+	Move m2(3, 2, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 33);
+}
+
+BOOST_AUTO_TEST_CASE(wordBonusOrthVertical) {
+	Move m1(1, 2, Move::HORIZONTAL, &zaTiles);
+	Move m2(2, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 33);
+}
+
+BOOST_AUTO_TEST_CASE(wordBonusParallelVertical) {
+	Move m1(1, 2, Move::VERTICAL, &zaTiles);
+	Move m2(2, 3, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 33);
+}
+
+BOOST_AUTO_TEST_CASE(wordBonusParallelHorizontal) {
+	Move m1(2, 1, Move::HORIZONTAL, &zaTiles);
+	Move m2(3, 2, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 33);
+}
+
+BOOST_AUTO_TEST_CASE(doubleLetterBonusOrthVertical) {
+	Move m1(3, 3, Move::HORIZONTAL, &zaTiles);
+	Move m2(3, 5, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 23);
+}
+
+BOOST_AUTO_TEST_CASE(doubleLetterBonusOrthHorizontal) {
+	Move m1(1, 5, Move::VERTICAL, &zaTiles);
+	Move m2(3, 5, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 23);
+}
+
+BOOST_AUTO_TEST_CASE(LetterBonusParallelVertical) {
+	Move m1(1, 4, Move::VERTICAL, &zaTiles);
+	Move m2(2, 5, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 23);
+}
+
+BOOST_AUTO_TEST_CASE(letterBonusParallelHorizontal) {
+	Move m1(2, 3, Move::HORIZONTAL, &zaTiles);
+	Move m2(3, 4, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 23);
+}
+
+BOOST_AUTO_TEST_CASE(letterBonusOrthVertical) {
+	Move m1(1, 4, Move::HORIZONTAL, &zaTiles);
+	Move m2(2, 5, Move::VERTICAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 21);
+}
+
+BOOST_AUTO_TEST_CASE(letterBonusOrthHorizontal) {
+	Move m1(2, 3, Move::VERTICAL, &zaTiles);
+	Move m2(3, 4, Move::HORIZONTAL, &dalTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 21);
+}
+
 BOOST_AUTO_TEST_SUITE_END();

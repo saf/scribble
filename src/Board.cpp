@@ -141,14 +141,12 @@ int Board::getNewWordScore(std::vector<Tile *> *wordTiles, int startRow, int sta
 	}
 
 	if (direction == Move::HORIZONTAL) {
-		col++;
 		while (col < this->width && this->tiles[row][col] != NULL) {
 			this->fields[row][col]->applyScore(*this->tiles[row][col], false, score, wordScoreFuncs);
 			expansionFound = true;
 			col++;
 		}
 	} else {
-		row++;
 		while (row < this->height && this->tiles[row][col] != NULL) {
 			this->fields[row][col]->applyScore(*this->tiles[row][col], false, score, wordScoreFuncs);
 			expansionFound = true;
@@ -157,7 +155,7 @@ int Board::getNewWordScore(std::vector<Tile *> *wordTiles, int startRow, int sta
 	}
 
 	if (tileIndex != -1 && expansionFound) {
-		this->fields[row][col]->applyScore(*wordTiles->at(tileIndex), true, score, wordScoreFuncs);
+		this->fields[startRow][startColumn]->applyScore(*wordTiles->at(tileIndex), true, score, wordScoreFuncs);
 	}
 
 	for (std::vector<wordScoreFunc *>::const_iterator it = wordScoreFuncs.begin(); it != wordScoreFuncs.end(); it++) {
