@@ -7,17 +7,17 @@
 
 #include "Trie.h"
 
-Trie::Node::Node(int childCount) {
+Trie::Node::Node(int childCount, Node *parent) {
 	this->children = new std::vector<Node *>(childCount);
 	this->final = false;
-	this->parent = NULL;
+	this->parent = parent;
 }
 
 Trie::Node::~Node() {
 	delete this->children;
 }
 
-Trie::Node *Trie::Node::getParent() {
+Trie::Node *Trie::Node::getParent() const {
 	return parent;
 }
 
@@ -37,7 +37,13 @@ void Trie::Node::setFinal() {
 	this->final = true;
 }
 
-Trie::Trie(Alphabet &alphabet) : alphabet(&alphabet), root(alphabet.getLetterCount()) {}
+Trie::Trie(const Alphabet &alphabet) : alphabet(&alphabet), root(alphabet.getLetterCount()) {
+	this->lastInsertedLength = 0;
+	this->lastInsertedNode = &this->root;
+	for (int i = 0; i < MAX_WORD_LENGTH; i++) {
+		this->lastInsertedWord[i] = L'\0';
+	}
+}
 
 Trie::~Trie() {}
 
@@ -48,12 +54,52 @@ void Trie::insert(std::wstring &word) {
 		int index = this->alphabet->getIndex(ch);
 		Node *child = node->find(index);
 		if (child == NULL) {
-			child = new Node(this->alphabet->getLetterCount());
+			child = new Node(this->alphabet->getLetterCount(), node);
 			node->insert(index, child);
 		}
 		node = child;
 	}
 	node->setFinal();
+}
+
+//void Trie::insert(std::wstring &word) {
+//	Node *node = this->lastInsertedNode;
+//	std::wstring::iterator it = word.begin();
+//	int commonPrefixLength = 0;
+//	int i;
+//
+//	while (it != word.end() && *it == this->lastInsertedWord[commonPrefixLength]) {
+//		it++;
+//		commonPrefixLength++;
+//	}
+//
+//	while (this->lastInsertedLength > commonPrefixLength) {
+//		this->lastInsertedNode = this->lastInsertedNode->getParent();
+//		this->lastInsertedLength--;
+//	}
+//
+//	node = this->lastInsertedNode;
+//	i = commonPrefixLength + 1;
+//
+//	while (it != word.end()) {
+//		wchar_t ch = *it;
+//		int index = this->alphabet->getIndex(ch);
+//		Node *child = node->find(index);
+//		if (child == NULL) {
+//			child = new Node(this->alphabet->getLetterCount(), node);
+//			node->insert(index, child);
+//		}
+//		node = child;
+//		this->lastInsertedWord[i++] = ch;
+//	}
+//	this->lastInsertedWord[i] = L'\0';
+//	this->lastInsertedNode = node;
+//	this->lastInsertedLength = i;
+//}
+
+void Trie::insert(const wchar_t *word) {
+	std::wstring s(word);
+	this->insert(s);
 }
 
 bool Trie::find(std::wstring &word) {
@@ -69,4 +115,9 @@ bool Trie::find(std::wstring &word) {
 		}
 	}
 	return node->isFinal();
+}
+
+bool Trie::find(const wchar_t *word) {
+	std::wstring s(word);
+	return this->find(s);
 }

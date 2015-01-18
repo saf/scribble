@@ -13,33 +13,44 @@
 #include "Alphabets.h"
 
 class Trie {
-private:
+public:
+	static const long int MAX_WORD_LENGTH = 40;
+
+protected:
 	class Node {
-	private:
+	protected:
 		Node *parent;
 		std::vector<Node *> *children;
 		bool final;
 	public:
-		Node(int childCount);
+		Node(int childCount, Node *parent = NULL);
 		~Node();
 
 		void insert(int index, Node *child);
 		Node *find(int index);
 
-		Node *getParent();
+		Node *getParent() const;
 
 		bool isFinal();
 		void setFinal();
 	};
 
 	Node root;
-	Alphabet *alphabet;
+	const Alphabet *alphabet;
+
+	int lastInsertedLength;
+	Node *lastInsertedNode;
+	wchar_t lastInsertedWord[MAX_WORD_LENGTH];
 public:
-	Trie(Alphabet &alphabet);
+
+	Trie(const Alphabet &alphabet);
 	virtual ~Trie();
 
 	void insert(std::wstring &word);
+	void insert(const wchar_t *word);
+
 	bool find(std::wstring &word);
+	bool find(const wchar_t *word);
 };
 
 #endif /* TRIE_H_ */

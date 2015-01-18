@@ -14,8 +14,8 @@ public:
 	Alphabet(std::wstring diacritics);
 	virtual ~Alphabet();
 
-	virtual int getIndex(unsigned wchar_t letter);
-	int getLetterCount();
+	virtual int getIndex(unsigned wchar_t letter) const;
+	int getLetterCount() const;
 };
 
 class PolishAlphabet : public Alphabet {

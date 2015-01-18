@@ -9,11 +9,11 @@ Alphabet::~Alphabet() {
 	delete this->diacritics;
 }
 
-int Alphabet::getLetterCount() {
+int Alphabet::getLetterCount() const {
 	return L'Z' - L'A' + 1 + this->diacritics->length();
 }
 
-int Alphabet::getIndex(unsigned wchar_t letter) {
+int Alphabet::getIndex(unsigned wchar_t letter) const {
 	if (letter >= L'A' && letter <= L'Z') {
 		return static_cast<unsigned int>(letter) - static_cast<unsigned int>(L'A');
 	} else {
@@ -28,7 +28,7 @@ int Alphabet::getIndex(unsigned wchar_t letter) {
 	throw std::string("Failed to find index for code point.");
 }
 
-PolishAlphabet::PolishAlphabet() : Alphabet(std::wstring(L"ĄĆĘŁŃÓŚŹŻ")) {};
+PolishAlphabet::PolishAlphabet() : Alphabet(std::wstring(L"ĄĆĘŁŃÓŚŹŻ#")) {};
 
-EnglishAlphabet::EnglishAlphabet() : Alphabet(std::wstring(L"")) {};
+EnglishAlphabet::EnglishAlphabet() : Alphabet(std::wstring(L"#")) {};
 
