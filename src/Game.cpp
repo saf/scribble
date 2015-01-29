@@ -17,16 +17,16 @@ Game::Decision::Decision(Move *move) {
 	this->data.move = move;
 }
 
-Game::State::State(Game &game, Board &board, std::set<Tile *> &bag) {
-	racks(game.getPlayerCount());
-	scores(game.getPlayerCount(), 0);
-	this->game = game;
-	this->board = board;
+Game::State::State(Game &game, Board &board, std::set<Tile *> &bag) :
+		  racks(game.getPlayerCount()),
+		  scores(game.getPlayerCount(), 0),
+		  board(board) {
+	this->game = &game;
 	this->bag = bag;
 	this->turn = 0;
 }
 
-Game::State::State(const Game::State &state) {
+Game::State::State(const Game::State &state) : game(state.game), board(state.board) {
 	*this = state;
 }
 
@@ -55,30 +55,36 @@ void Game::State::setRack(int playerId, const std::set<Tile *> &tiles) {
 }
 
 void Game::State::repopulateRack(int playerId) {
-	std::vector<Tile *> shuffledBag(racks[playerId]);
+	std::vector<Tile *> shuffledBag;
+	for (std::set<Tile *>::iterator it = racks[playerId].begin(); it != racks[playerId].end(); it++) {
+		shuffledBag.push_back(*it);
+	}
 	random_shuffle(shuffledBag.begin(), shuffledBag.end());
 
-	while (!shuffledBag.empty() && racks[playerId].size() < game.getRackSize()) {
-		Tile *tile = shuffledBag.pop_back();
+	while (!shuffledBag.empty() && racks[playerId].size() < game->getRackSize()) {
+		Tile *tile = shuffledBag.back();
 		racks[playerId].insert(tile);
+		shuffledBag.pop_back();
 	}
 }
 
 void Game::State::applyDecision(const Decision &decision) {
 	switch (decision.type) {
-	case Decision::MOVE:
-		int score = this->board.getMoveScore(*decision.data.move);
-		this->board.applyMove(*decision.data.move);
-		break;
-	case Decision::EXCHANGE:
-		const std::vector<Tile *> &tiles = decision.data.exchangedTiles;
-		for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
-			this->racks[this->turn].erase(*it);
+		case Decision::MOVE: {
+			int score = this->board.getMoveScore(*decision.data.move);
+			this->board.applyMove(*decision.data.move);
+			break;
 		}
-		break;
+		case Decision::EXCHANGE: {
+			const std::vector<Tile *> &tiles = *decision.data.exchangedTiles;
+			for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
+				this->racks[this->turn].erase(*it);
+			}
+			break;
+		}
 	}
 
-	this->turn = (this->turn + 1) % game.players.size();
+	this->turn = (this->turn + 1) % game->players.size();
 }
 
 
@@ -95,14 +101,14 @@ const std::vector<int>& Game::State::getScores() const {
 }
 
 int Game::State::getPlayerCount() const {
-	return game.getPlayerCount();
+	return game->getPlayerCount();
 }
 
 bool Game::State::isFinal() const {
 	if (!bag.empty()) {
 		return false;
 	} else {
-		for (std::vector<std::set<Tile *> >::iterator it = racks.begin(); it != racks.end(); it++) {
+		for (std::vector<std::set<Tile *> >::const_iterator it = racks.begin(); it != racks.end(); it++) {
 			if (it->empty()) {
 				return true;
 			}
@@ -112,9 +118,13 @@ bool Game::State::isFinal() const {
 }
 
 Game::Game(int playerCount, std::vector<Player *> &players) {
+	this->players = players;
+	this->currentState = NULL;
+}
+
+void Game::initializeState() {
 	Board board = this->getInitialBoard();
 	std::set<Tile *> bag = this->getInitialBag();
-	this->players = players;
 	this->currentState = new Game::State(*this, board, bag);
 }
 

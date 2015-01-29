@@ -9,6 +9,11 @@
 #define GAME_H_
 
 #include <set>
+#include <vector>
+#include "Move.h"
+#include "Board.h"
+
+class Player;
 
 class Game {
 public:
@@ -29,7 +34,7 @@ public:
 
 	class State {
 	private:
-		Game &game;
+		Game *game;
 		int turn; /* cycles through 0 ... (playerCount-1) */
 		Board board;
 		std::set<Tile *> bag;
@@ -44,7 +49,7 @@ public:
 		State(Game &game, Board &board, std::set<Tile *> &bag);
 		State(const State &state);
 		State& operator=(const State &state);
-		virtual ~State();
+		virtual ~State() {};
 
 		void applyDecision(const Decision &decision);
 
@@ -63,18 +68,31 @@ private:
 	std::vector<State *> stateHistory;
 	std::vector<Decision *> decisionHistory;
 
-	virtual void getInitialBoard() = 0;
-	virtual void getInitialBag() = 0;
+	virtual Board getInitialBoard() = 0;
+	virtual std::set<Tile *> getInitialBag() = 0;
+
+protected:
+	virtual void initializeState();
 
 public:
 	Game(int playerCount, std::vector<Player *> &players);
 	virtual ~Game();
 
-	virtual void getRackSize() = 0;
+	virtual int getRackSize() = 0;
 	int getPlayerCount() const;
 
 	void oneStep();
 	void play();
+};
+
+class Player {
+public:
+	virtual ~Player();
+
+	virtual void gameStarts(int yourId, const Game::State &state) = 0;
+	virtual void playerDecisionMade(int playerId, const Game::Decision &decision, const Game::State &newState) = 0;
+
+	virtual void makeDecision(const Game::State &state) = 0;
 };
 
 #endif /* GAME_H_ */
