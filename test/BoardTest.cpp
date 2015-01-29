@@ -14,7 +14,7 @@ struct MoveManagementTestSetup {
 	std::vector<Tile *> zaTiles;
 
 	MoveManagementTestSetup() : b(5, 4) {
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 4; j++) {
 				b.setField(i, j, new PlainField());
 			}
@@ -26,6 +26,24 @@ struct MoveManagementTestSetup {
 
 		zaTiles.push_back(new Tile(L'Z', 2, YELLOW));
 		zaTiles.push_back(new Tile(L'A', 1, YELLOW));
+	}
+
+	~MoveManagementTestSetup() {
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 4; j++) {
+				delete b.getField(i, j);
+			}
+		}
+		while (!startTiles.empty()) {
+			Tile *t = startTiles.back();
+			startTiles.pop_back();
+			delete t;
+		}
+		while (!zaTiles.empty()) {
+			Tile *t = zaTiles.back();
+			zaTiles.pop_back();
+			delete t;
+		}
 	}
 };
 
@@ -329,6 +347,24 @@ struct MoveScoringTestSetup {
 
 		zaTiles.push_back(new Tile(L'Z', 2, YELLOW));
 		zaTiles.push_back(new Tile(L'A', 1, YELLOW));
+	}
+
+	~MoveScoringTestSetup() {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				delete b.getField(i, j);
+			}
+		}
+		while (!dalTiles.empty()) {
+			Tile *t = dalTiles.back();
+			dalTiles.pop_back();
+			delete t;
+		}
+		while (!zaTiles.empty()) {
+			Tile *t = zaTiles.back();
+			zaTiles.pop_back();
+			delete t;
+		}
 	}
 };
 
