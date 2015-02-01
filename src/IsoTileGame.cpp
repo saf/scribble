@@ -18,7 +18,7 @@ IsoTileGame::~IsoTileGame() {
 
 std::set<Tile *> IsoTileGame::getInitialBag() {
 	std::set<Tile *> bag;
-	TileGroup *group = this->getTileGroups();
+	const TileGroup *group = this->getTileGroups();
 	for (int i = 0; i < this->getTileGroupCount(); i++) {
 		for (int j = 0; j < group->multiplicity; j++) {
 			Tile *t = new Tile(group->letter, group->points, group->color);
