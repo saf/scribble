@@ -5,7 +5,10 @@
  *      Author: saf
  */
 
+#include <cmath>
+
 #include "Literaki.h"
+#include "Fields.h"
 
 Literaki::Literaki(std::vector<Player *> players)
 	: IsoTileGame(players) {}
@@ -62,8 +65,32 @@ Board Literaki::getInitialBoard() {
 
 	for (int r = 0; r < 15; r++) {
 		for (int c = 0; c < 15; c++) {
-//			int distanceFromCenter = abs(r - 7) + abs(c - 7);
-			/* TODO */
+			/* The special fields are organized in city-metric
+			 * circles around the center, so we'll
+			 * build the construction of the board upon that. */
+
+			int distanceFromCenter = std::abs(r - 7) + std::abs(c - 7);
+			if (distanceFromCenter == 0) {
+				b.setField(r, c, new ColoredField<RED, 3>());
+			} else if (distanceFromCenter == 2) {
+				b.setField(r, c, new ColoredField<BLUE, 3>());
+			} else if (distanceFromCenter == 5) {
+				b.setField(r, c, new ColoredField<YELLOW, 3>());
+			} else if (distanceFromCenter == 9) {
+				b.setField(r, c, new ColoredField<GREEN, 3>());
+			} else if (distanceFromCenter == 14) {
+				b.setField(r, c, new ColoredField<RED, 3>());
+			} else if (distanceFromCenter == 7) {
+				if (abs(r - 7) <= 1 || abs(c - 7) <= 1) {
+					b.setField(r, c, new ColoredField<RED, 3>());
+				} else {
+					b.setField(r, c, new MultiplicativeWordBonusField<2>());
+				}
+			} else if (distanceFromCenter == 12 && r != 1 && r != 13) {
+				b.setField(r, c, new MultiplicativeWordBonusField<3>());
+			} else {
+				b.setField(r, c, new PlainField());
+			}
 		}
 	}
 
