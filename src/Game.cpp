@@ -54,16 +54,17 @@ void Game::State::setRack(int playerId, const std::set<Tile *> &tiles) {
 	}
 }
 
-void Game::State::repopulateRack(int playerId) {
+void Game::State::repopulateRack() {
+	std::set<Tile *> &rack = racks[turn];
 	std::vector<Tile *> shuffledBag;
-	for (std::set<Tile *>::iterator it = racks[playerId].begin(); it != racks[playerId].end(); it++) {
+	for (std::set<Tile *>::iterator it = rack.begin(); it != rack.end(); it++) {
 		shuffledBag.push_back(*it);
 	}
 	random_shuffle(shuffledBag.begin(), shuffledBag.end());
 
-	while (!shuffledBag.empty() && racks[playerId].size() < game->getRackSize()) {
+	while (!shuffledBag.empty() && rack.size() < game->getRackSize()) {
 		Tile *tile = shuffledBag.back();
-		racks[playerId].insert(tile);
+		rack.insert(tile);
 		shuffledBag.pop_back();
 	}
 }
@@ -83,10 +84,16 @@ void Game::State::applyDecision(const Decision &decision) {
 			break;
 		}
 	}
+}
 
+void Game::State::advanceTurn() {
 	this->turn = (this->turn + 1) % game->players.size();
 }
 
+void Game::State::returnHandToBag() {
+	bag.insert(hand.begin(), hand.end());
+	hand.clear();
+}
 
 const Board &Game::State::getBoard() const {
 	return board;
@@ -117,7 +124,7 @@ bool Game::State::isFinal() const {
 	}
 }
 
-Game::Game(int playerCount, std::vector<Player *> &players) {
+Game::Game(std::vector<Player *> &players) {
 	this->players = players;
 	this->currentState = NULL;
 }
@@ -129,6 +136,9 @@ void Game::initializeState() {
 }
 
 Game::~Game() {
+	for (std::vector<State *>::iterator it = stateHistory.begin(); it != stateHistory.end(); it++) {
+		delete &(*it);
+	}
 }
 
 int Game::getPlayerCount() const {
@@ -136,4 +146,32 @@ int Game::getPlayerCount() const {
 }
 
 void Game::oneStep() {
+	int turn = currentState->turn;
+	State *newState = new State(*currentState);
+	Player *currentPlayer = players[turn];
+
+	struct Decision decision = currentPlayer->makeDecision(*currentState);
+	newState->applyDecision(decision);
+	newState->repopulateRack();
+	newState->advanceTurn();
+
+	for (int i = 0; i < players.size(); i++) {
+		players[i]->playerDecisionMade(turn, decision, *newState);
+	}
+
+	decisionHistory.push_back(decision);
+	stateHistory.push_back(currentState);
+
+	currentState = newState;
+}
+
+void Game::play() {
+	initializeState();
+	for (int i = 0; i < players.size(); i++) {
+		players[i]->gameStarts(i, *currentState);
+	}
+
+	while (!currentState->isFinal()) {
+		oneStep();
+	}
 }

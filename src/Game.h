@@ -41,9 +41,19 @@ public:
 		std::vector<std::set<Tile *> > racks;
 		std::vector<int> scores;
 
+		/* This collection is used for tiles which are being exchanged */
+		std::vector<Tile *> hand;
+
 		const std::set<Tile *> &getRack(int playerId) const;
 		void setRack(int playerId, const std::set<Tile *> &tiles);
-		void repopulateRack(int playerId);
+
+		/* Repopulate the current player's rack randomly with tiles from the bag. */
+		void repopulateRack();
+
+		/* After getting new tiles when exchanging, bring the exchanged tiles back into the bag */
+		void returnHandToBag();
+
+		void advanceTurn();
 
 	public:
 		State(Game &game, Board &board, std::set<Tile *> &bag);
@@ -58,6 +68,8 @@ public:
 		const std::vector<int>& getScores() const;
 		int getPlayerCount() const;
 
+		friend class Game;
+
 		bool isFinal() const;
 	};
 
@@ -66,23 +78,22 @@ private:
 
 	State *currentState;
 	std::vector<State *> stateHistory;
-	std::vector<Decision *> decisionHistory;
-
-	virtual Board getInitialBoard() = 0;
-	virtual std::set<Tile *> getInitialBag() = 0;
+	std::vector<Decision> decisionHistory;
 
 protected:
+	virtual Board getInitialBoard() = 0;
+	virtual std::set<Tile *> getInitialBag() = 0;
 	virtual void initializeState();
 
 public:
-	Game(int playerCount, std::vector<Player *> &players);
+	Game(std::vector<Player *> &players);
 	virtual ~Game();
 
 	virtual int getRackSize() = 0;
 	int getPlayerCount() const;
 
-	void oneStep();
-	void play();
+	virtual void oneStep();
+	virtual void play();
 };
 
 class Player {
@@ -92,7 +103,7 @@ public:
 	virtual void gameStarts(int yourId, const Game::State &state) = 0;
 	virtual void playerDecisionMade(int playerId, const Game::Decision &decision, const Game::State &newState) = 0;
 
-	virtual void makeDecision(const Game::State &state) = 0;
+	virtual struct Game::Decision makeDecision(const Game::State &state) = 0;
 };
 
 #endif /* GAME_H_ */
