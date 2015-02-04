@@ -83,7 +83,6 @@ private:
 protected:
 	virtual Board getInitialBoard() = 0;
 	virtual std::set<Tile *> getInitialBag() = 0;
-	virtual void initializeState();
 
 public:
 	Game(std::vector<Player *> &players);
@@ -91,6 +90,9 @@ public:
 
 	virtual int getRackSize() = 0;
 	int getPlayerCount() const;
+
+	virtual void initializeState();
+	virtual State *getCurrentState();
 
 	virtual void oneStep();
 	virtual void play();

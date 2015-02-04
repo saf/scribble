@@ -52,6 +52,7 @@ void Game::State::setRack(int playerId, const std::set<Tile *> &tiles) {
 		bag.erase(*it);
 		racks[playerId].insert(*it);
 	}
+	returnHandToBag();
 }
 
 void Game::State::repopulateRack() {
@@ -67,6 +68,7 @@ void Game::State::repopulateRack() {
 		rack.insert(tile);
 		shuffledBag.pop_back();
 	}
+	returnHandToBag();
 }
 
 void Game::State::applyDecision(const Decision &decision) {
@@ -80,6 +82,7 @@ void Game::State::applyDecision(const Decision &decision) {
 			const std::vector<Tile *> &tiles = *decision.data.exchangedTiles;
 			for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
 				this->racks[this->turn].erase(*it);
+				this->hand.push_back(*it);
 			}
 			break;
 		}
@@ -135,6 +138,10 @@ void Game::initializeState() {
 	this->currentState = new Game::State(*this, board, bag);
 }
 
+Game::State *Game::getCurrentState() {
+	return this->currentState;
+}
+
 Game::~Game() {
 	for (std::vector<State *>::iterator it = stateHistory.begin(); it != stateHistory.end(); it++) {
 		delete &(*it);
@@ -175,3 +182,5 @@ void Game::play() {
 		oneStep();
 	}
 }
+
+Player::~Player() {};
