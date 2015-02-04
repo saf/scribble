@@ -7,7 +7,7 @@
 
 #include <cmath>
 
-#include "Literaki.h"
+#include "LiterakiGame.h"
 #include "Fields.h"
 
 LiterakiGame::LiterakiGame(std::vector<Player *> players)
@@ -56,7 +56,7 @@ static const struct IsoTileGame::TileGroup Literaki_tileGroups[] = {
 const struct IsoTileGame::TileGroup *LiterakiGame::tileGroups = &Literaki_tileGroups[0];
 const int LiterakiGame::tileGroupCount = sizeof(Literaki_tileGroups) / sizeof(IsoTileGame::TileGroup);
 
-const int Literaki::RACK_SIZE = 7;
+const int LiterakiGame::RACK_SIZE = 7;
 
 const IsoTileGame::TileGroup *LiterakiGame::getTileGroups() {
 	return tileGroups;
@@ -106,6 +106,6 @@ Board LiterakiGame::getInitialBoard() {
 	return b;
 }
 
-int Literaki::getRackSize() {
+int LiterakiGame::getRackSize() {
 	return RACK_SIZE;
 }
