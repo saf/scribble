@@ -330,11 +330,11 @@ struct MoveScoringTestSetup {
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
 				if (i == 3 && j == 3) {
-					b.setField(i, j, new MultiplicativeWordBonusField<3>());
+					b.setField(i, j, new MultiplicativeWordBonusField(3));
 				} else if (i == 5 && j == 3) {
-					b.setField(i, j, new ColoredField<GREEN, 3>());
+					b.setField(i, j, new ColoredField(3, GREEN));
 				} else if (i == 3 && j == 5) {
-					b.setField(i, j, new MultiplicativeLetterBonusField<3>());
+					b.setField(i, j, new MultiplicativeLetterBonusField(3));
 				} else {
 					b.setField(i, j, new PlainField());
 				}

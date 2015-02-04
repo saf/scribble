@@ -12,38 +12,52 @@
 
 class PlainField : public Field {
 public:
-	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
+	void applyScore(Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints();
 	}
 };
 
-template <int bonus> class MultiplicativeLetterBonusField : public Field {
-public:
-	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
-		score += tile.getPoints() * (newTile ? bonus : 1);
-	}
-};
-
-template <int factor> class MultiplicativeWordBonusField : public Field {
+class MultiplicativeLetterBonusField : public Field {
 private:
-	static void multiplyWordScore(int &score) {
-		score *= factor;
-	}
+	int factor;
 public:
-	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
+	MultiplicativeLetterBonusField(int factor) {
+		this->factor = factor;
+	}
+	void applyScore(Tile &tile, bool newTile, int &score) {
+		score += tile.getPoints() * (newTile ? factor : 1);
+	}
+};
+
+class MultiplicativeWordBonusField : public Field {
+private:
+	int factor;
+public:
+	MultiplicativeWordBonusField(int factor) {
+		this->factor = factor;
+	}
+	void applyScore(Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints();
+	}
+	void changeWordScore(bool newTile, int &score) {
 		if (newTile) {
-			wordScoreFunc *f = &multiplyWordScore;
-			wordScoreFuncs.push_back(f);
+			score *= this->factor;
 		}
 	}
 };
 
-template <int color, int factor> class ColoredField : public Field {
+class ColoredField : public Field {
+private:
+	int factor;
+	int color;
 public:
-	virtual void applyScore(Tile &tile, bool newTile, int &score, std::vector<wordScoreFunc *> &wordScoreFuncs) {
-		if (newTile && tile.getColor() == color) {
-			score += factor * tile.getPoints();
+	ColoredField(int factor, int color) {
+		this->factor = factor;
+		this->color = color;
+	}
+	void applyScore(Tile &tile, bool newTile, int &score) {
+		if (newTile && tile.getColor() == this->color) {
+			score += this->factor * tile.getPoints();
 		} else {
 			score += tile.getPoints();
 		}

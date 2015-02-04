@@ -9,19 +9,19 @@ LDFLAGS=-lboost_unit_test_framework
 
 all: test
 
-test: bin/test
+test: bin/unit-test
 	$<
 
-bin/test: $(OBJECTS) $(TEST_OBJECTS) | bin-dir
+bin/unit-test: $(OBJECTS) test/BoardTest.o | bin-dir
 	g++ -o $@ $^ $(LDFLAGS)
-	
+
 bin/scribble: src/main.cpp $(OBJECTS) | bin-dir
-	g++ -o $@ $^ $(LDFLAGS)
-	
+	g++ -o $@ $^
+
 %.o: %.cpp
 	g++ -c $(CFLAGS) -o $@ $<
 
 bin-dir:
 	mkdir -p bin
-	
+
 .PHONY: bin-dir 

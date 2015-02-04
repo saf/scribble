@@ -52,6 +52,8 @@ static const struct IsoTileGame::TileGroup Literaki_tileGroups[] = {
 const struct IsoTileGame::TileGroup *Literaki::tileGroups = &Literaki_tileGroups[0];
 const int Literaki::tileGroupCount = sizeof(Literaki_tileGroups) / sizeof(IsoTileGame::TileGroup);
 
+const int Literaki::RACK_SIZE = 7;
+
 const IsoTileGame::TileGroup *Literaki::getTileGroups() {
 	return tileGroups;
 }
@@ -68,31 +70,38 @@ Board Literaki::getInitialBoard() {
 			/* The special fields are organized in city-metric
 			 * circles around the center, so we'll
 			 * build the construction of the board upon that. */
-
+			Field *f;
 			int distanceFromCenter = std::abs(r - 7) + std::abs(c - 7);
 			if (distanceFromCenter == 0) {
-				b.setField(r, c, new ColoredField<RED, 3>());
+				f = new ColoredField(3, RED);
 			} else if (distanceFromCenter == 2) {
-				b.setField(r, c, new ColoredField<BLUE, 3>());
+				f = new ColoredField(3, BLUE);
 			} else if (distanceFromCenter == 5) {
-				b.setField(r, c, new ColoredField<YELLOW, 3>());
+				f = new ColoredField(3, YELLOW);
 			} else if (distanceFromCenter == 9) {
-				b.setField(r, c, new ColoredField<GREEN, 3>());
+				f = new ColoredField(3, GREEN);
 			} else if (distanceFromCenter == 14) {
-				b.setField(r, c, new ColoredField<RED, 3>());
+				f = new ColoredField(3, RED);
 			} else if (distanceFromCenter == 7) {
-				if (abs(r - 7) <= 1 || abs(c - 7) <= 1) {
-					b.setField(r, c, new ColoredField<RED, 3>());
+				if (std::abs(r - 7) <= 1 || std::abs(c - 7) <= 1) {
+					f = new ColoredField(3, RED);
 				} else {
-					b.setField(r, c, new MultiplicativeWordBonusField<2>());
+					f = new MultiplicativeWordBonusField(2);
 				}
 			} else if (distanceFromCenter == 12 && r != 1 && r != 13) {
-				b.setField(r, c, new MultiplicativeWordBonusField<3>());
+				f = new MultiplicativeWordBonusField(3);
 			} else {
-				b.setField(r, c, new PlainField());
+				f = new PlainField();
 			}
+
+			b.setField(r, c, f);
+			myFields.push_back(f);
 		}
 	}
 
 	return b;
+}
+
+int Literaki::getRackSize() {
+	return RACK_SIZE;
 }
