@@ -10,7 +10,7 @@
 
 #include "IsoTileGame.h"
 
-class Literaki : public IsoTileGame {
+class LiterakiGame : public IsoTileGame {
 
 public:
 	enum Colors { YELLOW, GREEN, BLUE, RED };
@@ -27,8 +27,8 @@ protected:
 
 	Board getInitialBoard();
 public:
-	Literaki(std::vector<Player *> players);
-	virtual ~Literaki();
+	LiterakiGame(std::vector<Player *> players);
+	virtual ~LiterakiGame();
 
 	int getRackSize();
 };
