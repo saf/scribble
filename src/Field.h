@@ -11,6 +11,7 @@
 #include <vector>
 #include "Tile.h"
 
+class FieldVisitor;
 
 class Field {
 public:
@@ -26,6 +27,8 @@ public:
 	virtual void applyScore(Tile &tile, bool newTile, int &score) = 0;
 
 	virtual void changeWordScore(bool newTile, int &score) {};
+
+	virtual void accept(FieldVisitor &v) = 0;
 };
 
 #endif /* FIELD_H_ */

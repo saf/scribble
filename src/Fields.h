@@ -9,11 +9,29 @@
 #define FIELDS_H_
 
 #include "Field.h"
+#include <cstdio>
+
+class PlainField;
+class MultiplicativeLetterBonusField;
+class MultiplicativeWordBonusField;
+class ColoredField;
+
+class FieldVisitor {
+public:
+	virtual ~FieldVisitor() {};
+	virtual void visit(const PlainField *f) = 0;
+	virtual void visit(const MultiplicativeLetterBonusField *f) = 0;
+	virtual void visit(const MultiplicativeWordBonusField *f) = 0;
+	virtual void visit(const ColoredField *f) = 0;
+};
 
 class PlainField : public Field {
 public:
 	void applyScore(Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints();
+	}
+	void accept(FieldVisitor &v) {
+		v.visit(this);
 	}
 };
 
@@ -26,6 +44,9 @@ public:
 	}
 	void applyScore(Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints() * (newTile ? factor : 1);
+	}
+	void accept(FieldVisitor &v) {
+		v.visit(this);
 	}
 };
 
@@ -44,6 +65,9 @@ public:
 			score *= this->factor;
 		}
 	}
+	void accept(FieldVisitor &v) {
+		v.visit(this);
+	}
 };
 
 class ColoredField : public Field {
@@ -61,6 +85,9 @@ public:
 		} else {
 			score += tile.getPoints();
 		}
+	}
+	void accept(FieldVisitor &v) {
+		v.visit(this);
 	}
 };
 
