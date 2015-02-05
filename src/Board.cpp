@@ -8,6 +8,24 @@
 #include "Board.h"
 
 Board::Board(int height, int width) {
+	initializeTables(height, width);
+}
+
+Board::~Board() {}
+
+Board::Board(const Board &board) {
+	initializeTables(board.width, board.height);
+	for (int i = 0; i < this->height; i++) {
+		for (int j = 0; j < this->width; j++) {
+			this->fields[i][j] = board.fields[i][j];
+			this->tiles[i][j] = board.tiles[i][j];
+			this->rows[i][j] = board.rows[i][j];
+			this->columns[j][i] = board.columns[j][i];
+		}
+	}
+}
+
+void Board::initializeTables(int height, int width) {
 	this->height = height;
 	this->width = width;
 
@@ -27,18 +45,12 @@ Board::Board(int height, int width) {
 	}
 }
 
-Board::~Board() {}
+int Board::getWidth() const {
+	return this->width;
+}
 
-Board::Board(const Board &board) {
-	Board(board.height, board.width);
-	for (int i = 0; i < this->height; i++) {
-		for (int j = 0; j < this->width; j++) {
-			this->fields[i][j] = board.fields[i][j];
-			this->tiles[i][j] = board.tiles[i][j];
-			this->rows[i][j] = board.rows[i][j];
-			this->columns[j][i] = board.columns[j][i];
-		}
-	}
+int Board::getHeight() const {
+	return this->height;
 }
 
 void Board::putTile(int row, int column, Tile &tile) {
@@ -48,7 +60,7 @@ void Board::putTile(int row, int column, Tile &tile) {
 	this->tiles[row][column] = &tile;
 }
 
-bool Board::checkMove(Move &move) {
+bool Board::checkMove(Move &move) const {
 	enum Move::Direction direction = move.getDirection();
 	int startRow = move.getStartRow();
 	int startColumn = move.getStartColumn();
@@ -91,7 +103,7 @@ bool Board::checkMove(Move &move) {
 	return true;
 }
 
-int Board::getNewWordScore(std::vector<Tile *> *wordTiles, int startRow, int startColumn, enum Move::Direction direction, int tileIndex) {
+int Board::getNewWordScore(std::vector<Tile *> *wordTiles, int startRow, int startColumn, enum Move::Direction direction, int tileIndex) const {
 	int score = 0;
 	std::vector<Field *> newTileFields;
 	std::vector<Field *> oldTileFields;
@@ -186,7 +198,7 @@ int Board::getNewWordScore(std::vector<Tile *> *wordTiles, int startRow, int sta
 	return score;
 }
 
-int Board::getMoveScore(Move &move) {
+int Board::getMoveScore(Move &move) const {
 	enum Move::Direction direction = move.getDirection();
 	enum Move::Direction orthogonal = direction == Move::HORIZONTAL ? Move::VERTICAL : Move::HORIZONTAL;
 	int startRow = move.getStartRow();
@@ -248,7 +260,7 @@ void Board::setField(int row, int col, Field *f) {
 	this->fields[row][col] = f;
 }
 
-const Field *Board::getField(int row, int col) {
+const Field *Board::getField(int row, int col) const {
 	return this->fields[row][col];
 }
 
@@ -256,6 +268,6 @@ void Board::setTile(int row, int col, Tile *t) {
 	this->tiles[row][col] = t;
 }
 
-const Tile *Board::getTile(int row, int col) {
+const Tile *Board::getTile(int row, int col) const {
 	return this->tiles[row][col];
 }

@@ -28,7 +28,7 @@ public:
 
 	virtual void changeWordScore(bool newTile, int &score) {};
 
-	virtual void accept(FieldVisitor &v) = 0;
+	virtual void accept(FieldVisitor &v) const = 0;
 };
 
 #endif /* FIELD_H_ */

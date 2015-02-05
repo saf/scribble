@@ -30,7 +30,7 @@ public:
 	void applyScore(Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints();
 	}
-	void accept(FieldVisitor &v) {
+	void accept(FieldVisitor &v) const {
 		v.visit(this);
 	}
 };
@@ -45,7 +45,7 @@ public:
 	void applyScore(Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints() * (newTile ? factor : 1);
 	}
-	void accept(FieldVisitor &v) {
+	void accept(FieldVisitor &v) const {
 		v.visit(this);
 	}
 };
@@ -65,7 +65,10 @@ public:
 			score *= this->factor;
 		}
 	}
-	void accept(FieldVisitor &v) {
+	int getFactor() const {
+		return this->factor;
+	}
+	virtual void accept(FieldVisitor &v) const {
 		v.visit(this);
 	}
 };
@@ -86,7 +89,10 @@ public:
 			score += tile.getPoints();
 		}
 	}
-	void accept(FieldVisitor &v) {
+	int getColor() const {
+		return this->color;
+	}
+	virtual void accept(FieldVisitor &v) const {
 		v.visit(this);
 	}
 };

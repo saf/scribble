@@ -146,6 +146,7 @@ Game::~Game() {
 	for (std::vector<State *>::iterator it = stateHistory.begin(); it != stateHistory.end(); it++) {
 		delete &(*it);
 	}
+	delete this->currentState;
 }
 
 int Game::getPlayerCount() const {

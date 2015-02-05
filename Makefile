@@ -15,6 +15,9 @@ test: bin/unit-test
 bin/unit-test: $(OBJECTS) test/BoardTest.o | bin-dir
 	g++ -o $@ $^ $(LDFLAGS)
 
+bin/board-printer-test: $(OBJECTS) test/LiterakiBoardTest.o
+	g++ -o $@ $^
+
 bin/scribble: src/main.cpp $(OBJECTS) | bin-dir
 	g++ -o $@ $^
 
