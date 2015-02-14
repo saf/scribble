@@ -11,16 +11,29 @@
 #define TILE_H_
 
 class Tile {
-private:
+protected:
 	const wchar_t letter;
 	const int color;
 	const int points;
 public:
 	Tile(wchar_t l, int p, int c = 0) : letter(l), points(p), color(c) {};
+	virtual ~Tile() {};
 
-	wchar_t getLetter() const { return letter; }
+	virtual wchar_t getLetter() const { return letter; }
 	int getColor() const { return color; }
 	int getPoints() const { return points; }
+	virtual bool isBlank() const { return false; }
+};
+
+class BlankTile : public Tile {
+protected:
+	wchar_t filledLetter;
+public:
+	virtual ~BlankTile() {};
+	BlankTile() : Tile(L'_', 0, -1), filledLetter(' ') {};
+	wchar_t getFilledLetter() const { return filledLetter; };
+	void fillLetter(wchar_t letter) { this->filledLetter = letter; };
+	bool isBlank() { return true; }
 };
 
 #endif /* TILE_H_ */

@@ -21,7 +21,12 @@ std::set<Tile *> IsoTileGame::getInitialBag() {
 	const TileGroup *group = this->getTileGroups();
 	for (int i = 0; i < this->getTileGroupCount(); i++) {
 		for (int j = 0; j < group->multiplicity; j++) {
-			Tile *t = new Tile(group->letter, group->points, group->color);
+			Tile *t;
+			if (group->letter == L'_') {
+				t = new BlankTile();
+			} else {
+				t = new Tile(group->letter, group->points, group->color);
+			}
 			bag.insert(t);
 			myTiles.push_back(t);
 		}
