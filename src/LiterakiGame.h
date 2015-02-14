@@ -31,6 +31,8 @@ public:
 	virtual ~LiterakiGame();
 
 	int getRackSize();
+
+	static LiterakiGame* readFromStream(std::wistream &s);
 };
 
 #endif /* LITERAKI_H_ */

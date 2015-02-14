@@ -55,6 +55,67 @@ void Game::State::setRack(int playerId, const std::set<Tile *> &tiles) {
 	returnHandToBag();
 }
 
+std::set<Tile *> Game::State::findTilesForPlayerRack(int playerId, const wchar_t *rackLetters) {
+	const wchar_t *p = rackLetters;
+	std::set<Tile *> empty;
+	std::set<Tile *> rack;
+	setRack(playerId, empty); /* Return to bag */
+
+	while (*p) {
+		wchar_t letter = *p;
+		for (std::set<Tile *>::iterator it = bag.begin(); it != bag.end(); it++) {
+			if ((*p == L'_' && (*it)->isBlank()) || (*it)->getLetter() == letter) {
+				Tile *tile = *it;
+				bag.erase(it);
+				rack.insert(tile);
+				break;
+			}
+		}
+		p++;
+	}
+
+	return rack;
+}
+
+std::vector<Tile *> Game::State::findTilesForPlayerMove(int playerId, int row, int column, Move::Direction direction, const wchar_t *wordLetters) {
+	std::set<Tile *> rack = racks[playerId];
+	std::vector<Tile *> moveTiles;
+	const wchar_t *p = wordLetters;
+	bool blankTile;
+
+	while (*p) {
+		wchar_t letter = *p;
+
+		if (*p == L'[') {
+			blankTile = true;
+		} else if (*p != L']') {
+			if (board.getTile(row, column) == NULL) {
+				for (std::set<Tile *>::iterator it = rack.begin(); it != rack.end(); it++) {
+					if (blankTile && (*it)->isBlank()) {
+						BlankTile *blank = static_cast<BlankTile *>(*it);
+						blank->fillLetter(letter);
+						moveTiles.push_back(blank);
+						break;
+					} else if ((*it)->getLetter() == letter) {
+						moveTiles.push_back(*it);
+						break;
+					}
+				}
+			}
+
+			if (direction == Move::HORIZONTAL) {
+				column++;
+			} else {
+				row++;
+			}
+			blankTile = false;
+		}
+		p++;
+	}
+
+	return moveTiles;
+}
+
 void Game::State::repopulateRack() {
 	std::set<Tile *> &rack = racks[turn];
 	std::vector<Tile *> shuffledBag;
@@ -153,19 +214,27 @@ int Game::getPlayerCount() const {
 	return players.size();
 }
 
-void Game::oneStep() {
+void Game::oneTurn() {
+	int turn = currentState->turn;
+	Player *currentPlayer = players[turn];
+
+	struct Decision decision = currentPlayer->makeDecision(*currentState);
+	this->applyDecision(decision);
+
+	State *newState = currentState; /* currentState is changed by applyDecision */
+	newState->repopulateRack();
+	for (int i = 0; i < players.size(); i++) {
+		players[i]->playerDecisionMade(turn, decision, *newState);
+	}
+}
+
+void Game::applyDecision(Decision &decision) {
 	int turn = currentState->turn;
 	State *newState = new State(*currentState);
 	Player *currentPlayer = players[turn];
 
-	struct Decision decision = currentPlayer->makeDecision(*currentState);
 	newState->applyDecision(decision);
-	newState->repopulateRack();
 	newState->advanceTurn();
-
-	for (int i = 0; i < players.size(); i++) {
-		players[i]->playerDecisionMade(turn, decision, *newState);
-	}
 
 	decisionHistory.push_back(decision);
 	stateHistory.push_back(currentState);
@@ -180,7 +249,7 @@ void Game::play() {
 	}
 
 	while (!currentState->isFinal()) {
-		oneStep();
+		oneTurn();
 	}
 }
 

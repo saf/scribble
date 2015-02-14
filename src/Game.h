@@ -55,6 +55,9 @@ public:
 
 		void advanceTurn();
 
+		std::set<Tile *> findTilesForPlayerRack(int playerId, const wchar_t *rack);
+		std::vector<Tile *> findTilesForPlayerMove(int playerId, int row, int column, Move::Direction direction, const wchar_t *wordLetters);
+
 	public:
 		State(Game &game, Board &board, std::set<Tile *> &bag);
 		State(const State &state);
@@ -69,18 +72,17 @@ public:
 		int getPlayerCount() const;
 
 		friend class Game;
+		friend class LiterakiGame; /* This is wrong and needs to be refactored. */
 
 		bool isFinal() const;
 	};
 
-private:
+protected:
 	std::vector<Player *> players;
 
 	State *currentState;
 	std::vector<State *> stateHistory;
 	std::vector<Decision> decisionHistory;
-
-protected:
 	virtual Board getInitialBoard() = 0;
 	virtual std::set<Tile *> getInitialBag() = 0;
 
@@ -94,7 +96,8 @@ public:
 	virtual void initializeState();
 	virtual State *getCurrentState();
 
-	virtual void oneStep();
+	virtual void applyDecision(Decision &d);
+	virtual void oneTurn();
 	virtual void play();
 };
 

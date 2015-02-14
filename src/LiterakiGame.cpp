@@ -6,9 +6,14 @@
  */
 
 #include <cmath>
+#include <iostream>
+#include <cstring>
+#include <assert.h>
 
 #include "LiterakiGame.h"
+#include "IdlePlayer.h"
 #include "Fields.h"
+#include "LiterakiBoardPrinter.h"
 
 LiterakiGame::LiterakiGame(std::vector<Player *> players)
 	: IsoTileGame(players) {}
@@ -20,38 +25,39 @@ LiterakiGame::~LiterakiGame() {
 }
 
 static const struct IsoTileGame::TileGroup Literaki_tileGroups[] = {
-		{ 9, L'A', LiterakiGame::YELLOW },
-		{ 1, L'Ą', LiterakiGame::RED },
-		{ 2, L'B', LiterakiGame::BLUE },
-		{ 3, L'C', LiterakiGame::GREEN },
-		{ 1, L'Ć', LiterakiGame::RED },
-		{ 3, L'D', LiterakiGame::GREEN },
-		{ 7, L'E', LiterakiGame::YELLOW },
-		{ 1, L'Ę', LiterakiGame::RED },
-		{ 1, L'F', LiterakiGame::RED },
-		{ 2, L'G', LiterakiGame::BLUE },
-		{ 2, L'H', LiterakiGame::BLUE },
-		{ 8, L'I', LiterakiGame::YELLOW },
-		{ 2, L'J', LiterakiGame::BLUE },
-		{ 3, L'K', LiterakiGame::GREEN },
-		{ 3, L'L', LiterakiGame::GREEN },
-		{ 2, L'Ł', LiterakiGame::BLUE },
-		{ 3, L'M', LiterakiGame::GREEN },
-		{ 5, L'N', LiterakiGame::YELLOW },
-		{ 1, L'Ń', LiterakiGame::RED },
-		{ 6, L'O', LiterakiGame::YELLOW },
-		{ 1, L'Ó', LiterakiGame::RED },
-		{ 3, L'P', LiterakiGame::GREEN },
-		{ 4, L'R', LiterakiGame::YELLOW },
-		{ 4, L'S', LiterakiGame::YELLOW },
-		{ 1, L'Ś', LiterakiGame::RED },
-		{ 3, L'T', LiterakiGame::GREEN },
-		{ 2, L'U', LiterakiGame::BLUE },
-		{ 4, L'W', LiterakiGame::YELLOW },
-		{ 4, L'Y', LiterakiGame::GREEN },
-		{ 5, L'Z', LiterakiGame::YELLOW },
-		{ 1, L'Ź', LiterakiGame::RED },
-		{ 1, L'Ż', LiterakiGame::RED },
+		{ 9, L'a', LiterakiGame::YELLOW },
+		{ 1, L'ą', LiterakiGame::RED },
+		{ 2, L'b', LiterakiGame::BLUE },
+		{ 3, L'c', LiterakiGame::GREEN },
+		{ 1, L'ć', LiterakiGame::RED },
+		{ 3, L'd', LiterakiGame::GREEN },
+		{ 7, L'e', LiterakiGame::YELLOW },
+		{ 1, L'ę', LiterakiGame::RED },
+		{ 1, L'f', LiterakiGame::RED },
+		{ 2, L'g', LiterakiGame::BLUE },
+		{ 2, L'h', LiterakiGame::BLUE },
+		{ 8, L'i', LiterakiGame::YELLOW },
+		{ 2, L'j', LiterakiGame::BLUE },
+		{ 3, L'k', LiterakiGame::GREEN },
+		{ 3, L'l', LiterakiGame::GREEN },
+		{ 2, L'ł', LiterakiGame::BLUE },
+		{ 3, L'm', LiterakiGame::GREEN },
+		{ 5, L'n', LiterakiGame::YELLOW },
+		{ 1, L'ń', LiterakiGame::RED },
+		{ 6, L'o', LiterakiGame::YELLOW },
+		{ 1, L'ó', LiterakiGame::RED },
+		{ 3, L'p', LiterakiGame::GREEN },
+		{ 4, L'r', LiterakiGame::YELLOW },
+		{ 4, L's', LiterakiGame::YELLOW },
+		{ 1, L'ś', LiterakiGame::RED },
+		{ 3, L't', LiterakiGame::GREEN },
+		{ 2, L'u', LiterakiGame::BLUE },
+		{ 4, L'w', LiterakiGame::YELLOW },
+		{ 4, L'y', LiterakiGame::GREEN },
+		{ 5, L'z', LiterakiGame::YELLOW },
+		{ 1, L'ź', LiterakiGame::RED },
+		{ 1, L'ż', LiterakiGame::RED },
+		{ 2, L'_' },
 };
 const struct IsoTileGame::TileGroup *LiterakiGame::tileGroups = &Literaki_tileGroups[0];
 const int LiterakiGame::tileGroupCount = sizeof(Literaki_tileGroups) / sizeof(IsoTileGame::TileGroup);
@@ -108,4 +114,77 @@ Board LiterakiGame::getInitialBoard() {
 
 int LiterakiGame::getRackSize() {
 	return RACK_SIZE;
+}
+
+LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
+	IdlePlayer player1;
+	IdlePlayer player2;
+	std::vector<Player *> players;
+	players.push_back(&player1);
+	players.push_back(&player2);
+	LiterakiGame* game = new LiterakiGame(players);
+	game->initializeState();
+
+	LiterakiBoardPrinter prn;
+	prn.printBoard(game->getCurrentState()->getBoard());
+
+	int turn = 0;
+	int round = 1;
+
+	while (!s.eof()) {
+		int readRound;
+		wchar_t rack[RACK_SIZE + 1];
+		char column[2];
+		int row;
+		char direction[2];
+		wchar_t words[101];
+		int points;
+		std::wstring line;
+		std::getline(s, line);
+		const wchar_t *str = line.c_str();
+
+		if (strchr("#\r\n", str[0])) {
+			/* Skip comments & blank lines */
+			continue;
+		}
+
+		if (turn == 0) {
+			int chars;
+			swscanf(line.c_str(), L"%d. %n", &readRound, &chars);
+			assert(readRound == round);
+			str += chars;
+		}
+
+		if (swscanf(str, L"%7ls: %1[a-o]%d%1[+-] %100ls +%d", rack, column, &row, direction, words, &points) == 6) {
+			/* Word move */
+			Decision::Data decisionData;
+			int col = column[0] - 'a';
+			wchar_t *mainWordEnd = wcschr(words, L'/');
+			if (mainWordEnd != NULL) {
+				*mainWordEnd = L'\0';
+			}
+			std::set<Tile *> playerRack = game->currentState->findTilesForPlayerRack(turn, rack);
+			if (game->stateHistory.size() > 0) {
+				game->stateHistory.back()->setRack(turn, playerRack);
+			}
+			game->currentState->setRack(turn, playerRack);
+
+			Move::Direction dir = direction[0] == '+' ? Move::VERTICAL : Move::HORIZONTAL;
+			std::vector<Tile *> moveTiles = game->currentState->findTilesForPlayerMove(turn, row - 1, col, dir, words);
+			decisionData.move = new Move(row - 1, col, dir, &moveTiles);
+			Decision decision(Decision::MOVE, decisionData);
+			game->applyDecision(decision);
+			prn.printBoard(game->getCurrentState()->getBoard());
+		} else {
+			Decision decision(Decision::PASS, Decision::Data());
+			game->applyDecision(decision);
+		}
+
+		if (turn == 1) {
+			round++;
+		}
+		turn = (turn + 1) % 2;
+	}
+
+	return game;
 }
