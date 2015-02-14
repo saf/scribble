@@ -253,6 +253,14 @@ void Board::applyMove(Move &move) {
 		throw InvalidMove();
 	}
 
+	while (this->tiles[row][col] != NULL) {
+		if (direction == Move::HORIZONTAL) {
+			col++;
+		} else {
+			row++;
+		}
+	}
+
 	for (std::vector<Tile *>::const_iterator it = tiles->begin(); it != tiles->end(); it++) {
 		this->putTile(row, col, **it);
 
