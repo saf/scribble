@@ -31,6 +31,8 @@ private:
 	void putTile(int row, int col, Tile &tile);
 	void removeTile(int row, int col);
 
+	void swap(Board &that);
+
 	/** Get score for a single new word. This can be called in two variants:
 	 *  * with tileIndex set to -1, this computes the score in the direction of the move.
 	 *    [row] and [col] are coordinates of the first tile placed within the move.
@@ -47,6 +49,8 @@ public:
 			return "Board::applyMove called with an invalid move.";
 		}
 	};
+
+	Board& operator=(Board that);
 
 	Board(int rows, int cols);
 	Board(const Board &board);

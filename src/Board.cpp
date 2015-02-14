@@ -45,6 +45,20 @@ void Board::initializeTables(int height, int width) {
 	}
 }
 
+void Board::swap(Board &that) {
+	std::swap(this->height, that.height);
+	std::swap(this->width, that.width);
+	std::swap(this->rows, that.rows);
+	std::swap(this->columns, that.columns);
+	std::swap(this->fields, that.fields);
+	std::swap(this->tiles, that.tiles);
+}
+
+Board& Board::operator=(Board that) {
+	this->swap(that);
+	return *this;
+}
+
 int Board::getWidth() const {
 	return this->width;
 }
