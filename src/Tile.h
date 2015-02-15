@@ -30,10 +30,10 @@ protected:
 	wchar_t filledLetter;
 public:
 	virtual ~BlankTile() {};
-	BlankTile() : Tile(L'_', 0, -1), filledLetter(' ') {};
-	wchar_t getFilledLetter() const { return filledLetter; };
+	BlankTile() : Tile(L'_', 0, -1), filledLetter(L' ') {};
+	virtual wchar_t getLetter() const { return filledLetter == L' ' ? L'_' : filledLetter; };
 	void fillLetter(wchar_t letter) { this->filledLetter = letter; };
-	bool isBlank() { return true; }
+	virtual bool isBlank() const { return true; }
 };
 
 #endif /* TILE_H_ */
