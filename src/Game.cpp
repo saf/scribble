@@ -63,13 +63,18 @@ std::set<Tile *> Game::State::findTilesForPlayerRack(int playerId, const wchar_t
 
 	while (*p) {
 		wchar_t letter = *p;
+		bool found = false;
 		for (std::set<Tile *>::iterator it = bag.begin(); it != bag.end(); it++) {
 			if ((*p == L'_' && (*it)->isBlank()) || (*it)->getLetter() == letter) {
 				Tile *tile = *it;
 				bag.erase(it);
 				rack.insert(tile);
+				found = true;
 				break;
 			}
+		}
+		if (!found) {
+			throw "Failed to find tile for player rack.";
 		}
 		p++;
 	}
@@ -89,17 +94,23 @@ std::vector<Tile *> Game::State::findTilesForPlayerMove(int playerId, int row, i
 		if (*p == L'[') {
 			blankTile = true;
 		} else if (*p != L']') {
+			bool found = false;
 			if (board.getTile(row, column) == NULL) {
 				for (std::set<Tile *>::iterator it = rack.begin(); it != rack.end(); it++) {
 					if (blankTile && (*it)->isBlank()) {
 						BlankTile *blank = static_cast<BlankTile *>(*it);
 						blank->fillLetter(letter);
 						moveTiles.push_back(blank);
+						found = true;
 						break;
 					} else if ((*it)->getLetter() == letter) {
 						moveTiles.push_back(*it);
+						found = true;
 						break;
 					}
+				}
+				if (!found) {
+					throw "Failed to find tile for player move.";
 				}
 			}
 
