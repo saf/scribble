@@ -41,7 +41,7 @@ void BoardPrinter::printBoard(const Board &b) {
 					std::wcout << std::endl << std::endl;
 				}
 			} else {
-				std::wcout << "   ";
+				std::wcout << L"   ";
 			}
 		}
 	}

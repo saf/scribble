@@ -10,14 +10,14 @@ int main(int argc, const char **argv) {
 	LiterakiBoardPrinter printer;
 	std::vector<Player *> players;
 
-	setlocale(LC_CTYPE, "");
+	setlocale(LC_ALL, "");
 	std::locale locale("");
 
 	players.push_back(&p);
 
 	std::wifstream fs;
 	std::cerr << "Opening " << argv[1] << std::endl;
-	std::cerr.imbue(locale);
+	std::wcout.imbue(locale);
 	fs.open(argv[1], std::fstream::in);
 	if (fs.is_open()) {
 		fs.imbue(locale);

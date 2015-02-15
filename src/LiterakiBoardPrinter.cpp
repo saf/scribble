@@ -46,7 +46,7 @@ void LiterakiBoardPrinter::visit(const ColoredField *field) {
 		break;
 	}
 
-	swprintf(s, 20, L"\033[1;3%s;7;41m%s \033[0m", color, this->tileString.c_str());
+	swprintf(s, 20, L"\033[1;3%s;7;41m%ls \033[0m", color, this->tileString.c_str());
 	this->fieldString = std::wstring(s);
 }
 
@@ -63,7 +63,7 @@ void LiterakiBoardPrinter::visit(const MultiplicativeWordBonusField *field) {
 		break;
 	}
 
-	swprintf(s, 20, L"\033[1;3%s;7;41m%s \033[0m", color, this->tileString.c_str());
+	swprintf(s, 20, L"\033[1;3%s;7;41m%ls \033[0m", color, this->tileString.c_str());
 	this->fieldString = std::wstring(s);
 }
 
