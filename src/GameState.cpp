@@ -62,7 +62,12 @@ void GameState::repopulateRack(int playerId, const std::vector<Tile *>& tiles) {
 void GameState::applyDecision(const PlayerDecision &decision) {
 	switch (decision.type) {
 		case PlayerDecision::MOVE: {
-			int score = this->board.getMoveScore(*decision.data.move);
+			Move *move = decision.data.move;
+			int score = this->board.getMoveScore(*move);
+			this->scores[turn] += score;
+			for (std::vector<Tile *>::const_iterator it = move->getTiles()->begin(); it != move->getTiles()->end(); it++) {
+				this->racks[turn].erase(*it);
+			}
 			this->board.applyMove(*decision.data.move);
 			break;
 		}
