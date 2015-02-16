@@ -125,9 +125,6 @@ LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
 	LiterakiGame* game = new LiterakiGame(players);
 	game->initializeState();
 
-	LiterakiBoardPrinter prn;
-	prn.printBoard(game->getCurrentState()->getBoard());
-
 	int turn = 0;
 	int round = 1;
 
@@ -180,7 +177,6 @@ LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
 			PlayerDecision decision(PlayerDecision::MOVE, decisionData);
 			assert(points == game->getCurrentState()->getBoard().getMoveScore(*move));
 			game->applyDecision(decision);
-			prn.printBoard(game->getCurrentState()->getBoard());
 		} else {
 			PlayerDecision decision(PlayerDecision::PASS, PlayerDecision::Data());
 			game->applyDecision(decision);
