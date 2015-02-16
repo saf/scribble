@@ -39,7 +39,7 @@ std::vector<Tile *> IsoTileGame::findTilesForPlayerRack(const GameState &state, 
 	const wchar_t *p = rackLetters;
 	int turn = state.getTurn();
 	std::set<Tile *> rack = state.getRacks().at(turn);
-	std::set<Tile *> bag = state.getBag();
+	std::set<Tile *> bag = std::set<Tile *>(state.getBag()); /* Create copy of the bag to safely remove found entries. */
 	std::vector<Tile *> tiles;
 
 	while (*p) {
@@ -55,6 +55,7 @@ std::vector<Tile *> IsoTileGame::findTilesForPlayerRack(const GameState &state, 
 			for (std::set<Tile *>::iterator it = bag.begin(); it != bag.end(); it++) {
 				if ((*p == L'_' && (*it)->isBlank()) || (*it)->getLetter() == letter) {
 					tiles.push_back(*it);
+					bag.erase(*it);
 					found = true;
 					break;
 				}
@@ -71,7 +72,7 @@ std::vector<Tile *> IsoTileGame::findTilesForPlayerRack(const GameState &state, 
 
 std::vector<Tile *> IsoTileGame::findTilesForPlayerMove(const GameState &state, int row, int column, Move::Direction direction, const wchar_t *wordLetters) {
 	int turn = state.getTurn();
-	std::set<Tile *> rack = state.getRacks().at(turn);
+	std::set<Tile *> rack = std::set<Tile *>(state.getRacks().at(turn));
 	std::vector<Tile *> moveTiles;
 	const wchar_t *p = wordLetters;
 	bool blankTile;
@@ -89,10 +90,12 @@ std::vector<Tile *> IsoTileGame::findTilesForPlayerMove(const GameState &state, 
 						BlankTile *blank = static_cast<BlankTile *>(*it);
 						blank->fillLetter(letter);
 						moveTiles.push_back(blank);
+						rack.erase(blank);
 						found = true;
 						break;
 					} else if ((*it)->getLetter() == letter) {
 						moveTiles.push_back(*it);
+						rack.erase(*it);
 						found = true;
 						break;
 					}
