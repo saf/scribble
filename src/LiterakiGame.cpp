@@ -157,26 +157,26 @@ LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
 
 		if (swscanf(str, L"%7ls: %1[a-o]%d%1[+-] %100ls +%d", rack, column, &row, direction, words, &points) == 6) {
 			/* Word move */
-			Decision::Data decisionData;
+			PlayerDecision::Data decisionData;
 			int col = column[0] - 'a';
 			wchar_t *mainWordEnd = wcschr(words, L'/');
 			if (mainWordEnd != NULL) {
 				*mainWordEnd = L'\0';
 			}
-			std::set<Tile *> playerRack = game->currentState->findTilesForPlayerRack(turn, rack);
+			std::vector<Tile *> missingRackTiles = IsoTileGame::findTilesForPlayerRack(*game->getCurrentState(), rack);
 			if (game->stateHistory.size() > 0) {
-				game->stateHistory.back()->setRack(turn, playerRack);
+				game->stateHistory.back()->repopulateRack(turn, missingRackTiles);
 			}
-			game->currentState->setRack(turn, playerRack);
+			game->currentState->repopulateRack(turn, missingRackTiles);
 
 			Move::Direction dir = direction[0] == '+' ? Move::VERTICAL : Move::HORIZONTAL;
-			std::vector<Tile *> moveTiles = game->currentState->findTilesForPlayerMove(turn, row - 1, col, dir, words);
+			std::vector<Tile *> moveTiles = IsoTileGame::findTilesForPlayerMove(*game->getCurrentState(), row - 1, col, dir, words);
 			decisionData.move = new Move(row - 1, col, dir, &moveTiles);
-			Decision decision(Decision::MOVE, decisionData);
+			PlayerDecision decision(PlayerDecision::MOVE, decisionData);
 			game->applyDecision(decision);
 			prn.printBoard(game->getCurrentState()->getBoard());
 		} else {
-			Decision decision(Decision::PASS, Decision::Data());
+			PlayerDecision decision(PlayerDecision::PASS, PlayerDecision::Data());
 			game->applyDecision(decision);
 		}
 

@@ -26,5 +26,4 @@ int main(int argc, const char **argv) {
 	} else {
 		std::cerr << "Failed to open " << argv[1] << std::endl;
 	}
-
 }

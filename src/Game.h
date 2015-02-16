@@ -12,77 +12,35 @@
 #include <vector>
 #include "Move.h"
 #include "Board.h"
+#include "GameState.h"
 
 class Player;
+class GameState;
+class PlayerState;
+
+struct PlayerDecision {
+public:
+	enum Type { MOVE, EXCHANGE, PASS };
+	union Data {
+		Move *move;                          /* for MOVE decisions */
+		std::vector<Tile *> *exchangedTiles; /* for EXCHANGE decisions */
+	};
+
+	Type type;
+	Data data;
+
+	PlayerDecision(enum Type type, union Data data);
+	PlayerDecision(Move *move);
+};
+
 
 class Game {
-public:
-	struct Decision {
-	public:
-		enum Type { MOVE, EXCHANGE, PASS };
-		union Data {
-			Move *move;                          /* for MOVE decisions */
-			std::vector<Tile *> *exchangedTiles; /* for EXCHANGE decisions */
-		};
-
-		Type type;
-		Data data;
-
-		Decision(enum Type type, union Data data);
-		Decision(Move *move);
-	};
-
-	class State {
-	private:
-		Game *game;
-		int turn; /* cycles through 0 ... (playerCount-1) */
-		Board board;
-		std::set<Tile *> bag;
-		std::vector<std::set<Tile *> > racks;
-		std::vector<int> scores;
-
-		/* This collection is used for tiles which are being exchanged */
-		std::vector<Tile *> hand;
-
-		const std::set<Tile *> &getRack(int playerId) const;
-		void setRack(int playerId, const std::set<Tile *> &tiles);
-
-		/* Repopulate the current player's rack randomly with tiles from the bag. */
-		void repopulateRack();
-
-		/* After getting new tiles when exchanging, bring the exchanged tiles back into the bag */
-		void returnHandToBag();
-
-		void advanceTurn();
-
-		std::set<Tile *> findTilesForPlayerRack(int playerId, const wchar_t *rack);
-		std::vector<Tile *> findTilesForPlayerMove(int playerId, int row, int column, Move::Direction direction, const wchar_t *wordLetters);
-
-	public:
-		State(Game &game, Board &board, std::set<Tile *> &bag);
-		State(const State &state);
-		State& operator=(const State &state);
-		virtual ~State() {};
-
-		void applyDecision(const Decision &decision);
-
-		const Board& getBoard() const;
-		const std::set<Tile *>& getRack() const ; /* Returns rack for current player */
-		const std::vector<int>& getScores() const;
-		int getPlayerCount() const;
-
-		friend class Game;
-		friend class LiterakiGame; /* This is wrong and needs to be refactored. */
-
-		bool isFinal() const;
-	};
-
 protected:
 	std::vector<Player *> players;
 
-	State *currentState;
-	std::vector<State *> stateHistory;
-	std::vector<Decision> decisionHistory;
+	GameState *currentState;
+	std::vector<GameState *> stateHistory;
+	std::vector<PlayerDecision> decisionHistory;
 	virtual Board getInitialBoard() = 0;
 	virtual std::set<Tile *> getInitialBag() = 0;
 
@@ -94,9 +52,9 @@ public:
 	int getPlayerCount() const;
 
 	virtual void initializeState();
-	virtual State *getCurrentState();
+	virtual GameState *getCurrentState();
 
-	virtual void applyDecision(Decision &d);
+	virtual void applyDecision(PlayerDecision &d);
 	virtual void oneTurn();
 	virtual void play();
 };
@@ -105,10 +63,10 @@ class Player {
 public:
 	virtual ~Player();
 
-	virtual void gameStarts(int yourId, const Game::State &state) = 0;
-	virtual void playerDecisionMade(int playerId, const Game::Decision &decision, const Game::State &newState) = 0;
+	virtual void gameStarts(int yourId, const PlayerState &state) = 0;
+	virtual void playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState) = 0;
 
-	virtual struct Game::Decision makeDecision(const Game::State &state) = 0;
+	virtual struct PlayerDecision makeDecision(const PlayerState &state) = 0;
 };
 
 #endif /* GAME_H_ */

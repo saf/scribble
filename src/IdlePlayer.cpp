@@ -15,9 +15,9 @@ IdlePlayer::~IdlePlayer() {
 	// TODO Auto-generated destructor stub
 }
 
-void IdlePlayer::gameStarts(int yourId, const Game::State &state) {}
-void IdlePlayer::playerDecisionMade(int playerId, const Game::Decision &decision, const Game::State &newState) {}
+void IdlePlayer::gameStarts(int yourId, const PlayerState &state) {}
+void IdlePlayer::playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState) {}
 
-struct Game::Decision IdlePlayer::makeDecision(const Game::State &state) {
-	return Game::Decision(Game::Decision::PASS, Game::Decision::Data());
+struct PlayerDecision IdlePlayer::makeDecision(const PlayerState &state) {
+	return PlayerDecision(PlayerDecision::PASS, PlayerDecision::Data());
 }

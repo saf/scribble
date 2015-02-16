@@ -15,10 +15,10 @@ public:
 	IdlePlayer();
 	virtual ~IdlePlayer();
 
-	void gameStarts(int yourId, const Game::State &state);
-	void playerDecisionMade(int playerId, const Game::Decision &decision, const Game::State &newState);
+	void gameStarts(int yourId, const PlayerState &state);
+	void playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState);
 
-	struct Game::Decision makeDecision(const Game::State &state);
+	struct PlayerDecision makeDecision(const PlayerState &state);
 };
 
 #endif /* IDLEPLAYER_H_ */

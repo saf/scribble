@@ -12,6 +12,7 @@
 #define ISOTILEGAME_H_
 
 #include "Game.h"
+#include "Move.h"
 
 class IsoTileGame : public Game {
 public:
@@ -34,6 +35,9 @@ protected:
 	virtual int getTileGroupCount() = 0;
 
 	std::set<Tile *> getInitialBag();
+
+	static std::vector<Tile *> findTilesForPlayerRack(const GameState &state, const wchar_t *rackLetters);
+	static std::vector<Tile *> findTilesForPlayerMove(const GameState &state, int row, int column, Move::Direction direction, const wchar_t *wordLetters);
 };
 
 #endif /* ISOTILEGAME_H_ */
