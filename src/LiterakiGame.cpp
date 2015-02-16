@@ -133,7 +133,7 @@ LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
 
 	while (!s.eof()) {
 		int readRound;
-		wchar_t rack[RACK_SIZE + 1];
+		wchar_t rack[RACK_SIZE + 2];
 		char column[2];
 		int row;
 		char direction[2];
@@ -155,8 +155,12 @@ LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
 			str += chars;
 		}
 
-		if (swscanf(str, L"%7ls: %1[a-o]%d%1[+-] %100ls +%d", rack, column, &row, direction, words, &points) == 6) {
-			/* Word move */
+		if (swscanf(str, L"%8ls %1[a-o]%d%1[+-] %100ls +%d", rack, column, &row, direction, words, &points) == 6) {
+			/* Word move.
+			 *
+			 * There is a colon in the 'rack' string, so we need to get rid of that. */
+			rack[wcslen(rack) - 1] = L'\0';
+
 			PlayerDecision::Data decisionData;
 			int col = column[0] - 'a';
 			wchar_t *mainWordEnd = wcschr(words, L'/');
