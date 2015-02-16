@@ -491,6 +491,38 @@ BOOST_AUTO_TEST_CASE(plainHorizontalIntersect) {
 	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 8);
 }
 
+BOOST_AUTO_TEST_CASE(plainVerticalAddBottom) {
+	Move m1(0, 0, Move::HORIZONTAL, &dalTiles);
+	Move m2(1, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 5);
+}
+
+BOOST_AUTO_TEST_CASE(plainVerticalAddBottom2) {
+	Move m1(0, 0, Move::HORIZONTAL, &dalTiles);
+	Move m2(0, 0, Move::VERTICAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 5);
+}
+
+BOOST_AUTO_TEST_CASE(plainHorizontalAddRight) {
+	Move m1(0, 0, Move::VERTICAL, &dalTiles);
+	Move m2(0, 1, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 5);
+}
+
+BOOST_AUTO_TEST_CASE(plainHorizontalAddRight2) {
+	Move m1(0, 0, Move::VERTICAL, &dalTiles);
+	Move m2(0, 0, Move::HORIZONTAL, &zaTiles);
+
+	b.applyMove(m1);
+	BOOST_CHECK_EQUAL(b.getMoveScore(m2), 5);
+}
+
 BOOST_AUTO_TEST_CASE(doubleColorBonusOrthVertical) {
 	Move m1(5, 4, Move::HORIZONTAL, &zaTiles);
 	Move m2(5, 3, Move::VERTICAL, &dalTiles);

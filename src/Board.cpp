@@ -121,28 +121,59 @@ int Board::getNewWordScore(std::vector<Tile *> *wordTiles, int startRow, int sta
 	int score = 0;
 	std::vector<Field *> newTileFields;
 	std::vector<Field *> oldTileFields;
-	int row = startRow - (direction == Move::VERTICAL ? 1 : 0);
-	int col = startColumn - (direction == Move::HORIZONTAL ? 1 : 0);
+	bool hasPreceding = false;
+	int row = startRow;
+	int col = startColumn;
+	if (direction == Move::VERTICAL && row - 1 >= 0 && this->tiles[row - 1][col] != NULL) {
+		hasPreceding = true;
+		row--;
+	} else if (direction == Move::HORIZONTAL && col - 1 >= 0 && this->tiles[row][col - 1] != NULL) {
+		hasPreceding = true;
+		col--;
+	}
+
 	bool expansionFound = false;
 
-	/* Account for existing tiles 'before' our tile in the new word */
-	while (col >= 0 && row >= 0 && this->tiles[row][col] != NULL) {
-		Field *field = this->fields[row][col];
-		field->applyScore(*this->tiles[row][col], false, score);
-		oldTileFields.push_back(field);
+	/* Account for existing tiles 'before' our first tile in the new word
+	 * if startRow/startColumn specifies the location of our first tile */
+	if (hasPreceding) {
+		while (col >= 0 && row >= 0 && this->tiles[row][col] != NULL) {
+			Field *field = this->fields[row][col];
+			field->applyScore(*this->tiles[row][col], false, score);
+			oldTileFields.push_back(field);
 
-		if (direction == Move::HORIZONTAL) {
-			col--;
-		} else {
-			row--;
+			if (direction == Move::HORIZONTAL) {
+				col--;
+			} else {
+				row--;
+			}
+			expansionFound = true;
 		}
-		expansionFound = true;
 	}
 
 	row = startRow;
 	col = startColumn;
 	if (tileIndex == -1) {
+		/* Account for existing tiles before our first tile if startRow/startColumn
+		 * specify the location of the first tile in the whole word. */
+		if (direction == Move::HORIZONTAL) {
+			while (col < this->width && this->tiles[row][col] != NULL) {
+				Field *field = this->fields[row][col];
+				field->applyScore(*this->tiles[row][col], false, score);
+				oldTileFields.push_back(field);
+				col++;
+			}
+		} else {
+			while (row < this->height && this->tiles[row][col] != NULL) {
+				Field *field = this->fields[row][col];
+				field->applyScore(*this->tiles[row][col], false, score);
+				oldTileFields.push_back(field);
+				row++;
+			}
+		}
+
 		for (std::vector<Tile *>::const_iterator it = wordTiles->begin(); it != wordTiles->end(); it++) {
+
 			Field *field = this->fields[row][col];
 			field->applyScore(**it, true, score);
 			newTileFields.push_back(field);
@@ -223,6 +254,16 @@ int Board::getMoveScore(Move &move) const {
 	int col = startColumn;
 
 	score += getNewWordScore(tiles, row, col, direction);
+
+	if (direction == Move::HORIZONTAL) {
+		while (col < this->width && this->tiles[row][col] != NULL) {
+			col++;
+		}
+	} else {
+		while (row < this->height && this->tiles[row][col] != NULL) {
+			row++;
+		}
+	}
 
 	for (int i = 0; i < tiles->size(); i++) {
 		score += getNewWordScore(tiles, row, col, orthogonal, i);
