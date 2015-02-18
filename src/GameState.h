@@ -59,10 +59,10 @@ class PlayerState : private GameState {
 	public:
 		PlayerState(const GameState &state);
 
-		const Board &getBoard();
-		const std::set<Tile *>& getRack();
-		const std::vector<int>& getScores();
-		int getPlayerCount();
+		const Board &getBoard() const;
+		const std::set<Tile *>& getRack() const;
+		const std::vector<int>& getScores() const;
+		int getPlayerCount() const;
 
 		void applyDecision(const PlayerDecision &decision);
 };

@@ -147,19 +147,19 @@ bool GameState::isFinal() const {
 
 PlayerState::PlayerState(const GameState &s) : GameState(s) {}
 
-const Board& PlayerState::getBoard() {
+const Board& PlayerState::getBoard() const {
 	return GameState::getBoard();
 }
 
-const std::set<Tile *>& PlayerState::getRack() {
+const std::set<Tile *>& PlayerState::getRack() const {
 	return GameState::getRacks().at(getTurn());
 }
 
-const std::vector<int>& PlayerState::getScores() {
+const std::vector<int>& PlayerState::getScores() const {
 	return GameState::getScores();
 }
 
-int PlayerState::getPlayerCount() {
+int PlayerState::getPlayerCount() const {
 	return GameState::getGame()->getPlayerCount();
 }
 
