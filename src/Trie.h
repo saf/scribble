@@ -16,7 +16,6 @@ class Trie {
 public:
 	static const long int MAX_WORD_LENGTH = 40;
 
-protected:
 	class Node {
 	protected:
 		Node *parent;
@@ -27,14 +26,18 @@ protected:
 		~Node();
 
 		void insert(int index, Node *child);
+
 		Node *find(int index);
+		const Node *find(int index) const;
 
-		Node *getParent() const;
+		Node *getParent();
+		const Node *getParent() const;
 
-		bool isFinal();
+		bool isFinal() const;
 		void setFinal();
 	};
 
+protected:
 	Node root;
 	const Alphabet *alphabet;
 
@@ -46,11 +49,11 @@ public:
 	Trie(const Alphabet &alphabet);
 	virtual ~Trie();
 
-	void insert(std::wstring &word);
-	void insert(const wchar_t *word);
+	virtual void insert(std::wstring &word);
+	virtual void insert(const wchar_t *word);
 
-	bool find(std::wstring &word);
-	bool find(const wchar_t *word);
+	virtual bool find(std::wstring &word) const;
+	virtual bool find(const wchar_t *word) const;
 };
 
 #endif /* TRIE_H_ */

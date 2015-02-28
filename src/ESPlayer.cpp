@@ -7,9 +7,9 @@
 
 #include "ESPlayer.h"
 
-#include <bitset>
+#include <map>
 
-ESPlayer::ESPlayer() {}
+ESPlayer::ESPlayer(ESDictionary& dict) : dictionary(dict) {}
 
 ESPlayer::~ESPlayer() {}
 
@@ -17,7 +17,7 @@ void ESPlayer::gameStarts(int yourId, const PlayerState &state) {}
 
 void ESPlayer::playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState) {}
 
-static void getBoardRowsAndColumns(const Board &b, std::vector<std::vector<wchar_t> >& rows, std::vector<std::vector<wchar_t> >& cols) {
+static const ESBoardInfo getBoardInfo(const Board &b, std::vector<std::vector<wchar_t> >& rows, std::vector<std::vector<wchar_t> >& cols) {
 	int width = b.getWidth();
 	int height = b.getHeight();
 
@@ -36,31 +36,52 @@ static void getBoardRowsAndColumns(const Board &b, std::vector<std::vector<wchar
 			cols[col][row] = ch;
 		}
 	}
+
+	ESBoardInfo bi(b, rows, cols);
+	return bi;
+}
+
+static void moveFoundCallback(Move *move, void *context) {
+	std::vector<Move *> *moves = static_cast<std::vector<Move *> *>(context);
+	moves->push_back(move);
 }
 
 struct PlayerDecision ESPlayer::makeDecision(const PlayerState &state) {
 	const Board& b = state.getBoard();
-	std::vector<Hook> hooks = getHooks(b);
+	std::vector<ESHook> hooks = getHooks(b);
 	std::set<Tile *> rack = state.getRack();
 	std::vector<Tile *> tiles(rack.size());
 	std::copy(rack.begin(), rack.end(), tiles.begin());
 
 	std::vector<std::vector<wchar_t> > rows;
 	std::vector<std::vector<wchar_t> > columns;
-	getBoardRowsAndColumns(b, rows, columns);
+	ESBoardInfo bi = getBoardInfo(b, rows, columns);
+	std::vector<Move *> moves;
+	std::multimap<int, Move *> moveScores;
 
-	for (std::vector<Hook>::iterator it = hooks.begin(); it != hooks.end(); it++) {
-
+	for (std::vector<ESHook>::iterator it = hooks.begin(); it != hooks.end(); it++) {
+		ESHook h = *it;
+		dictionary.findMovesAtHook(bi, h, tiles, moveFoundCallback, &moves);
 	}
 
-	PlayerDecision decision(PlayerDecision::PASS, PlayerDecision::Data());
-	return decision;
+	for (std::vector<Move *>::iterator it = moves.begin(); it != moves.end(); it++) {
+		Move *m = *it;
+		int score = state.getBoard().getMoveScore(*m);
+		moveScores.insert(std::pair<int, Move *>(score, m));
+	}
+
+	std::multimap<int, Move *>::reverse_iterator rit = moveScores.rbegin();
+	if (rit != moveScores.rend()) {
+		return PlayerDecision((*rit).second);
+	} else {
+		return PlayerDecision(PlayerDecision::PASS, PlayerDecision::Data());
+	}
 }
 
-std::vector<ESPlayer::Hook> ESPlayer::getHooks(const Board& board) {
+std::vector<ESHook> ESPlayer::getHooks(const Board& board) {
 	int width = board.getWidth();
 	int height = board.getHeight();
-	std::vector<ESPlayer::Hook> hooks;
+	std::vector<ESHook> hooks;
 	std::vector<std::vector<std::vector<int> > > hookAvailable;
 
 	hookAvailable.resize(height);
@@ -69,37 +90,37 @@ std::vector<ESPlayer::Hook> ESPlayer::getHooks(const Board& board) {
 		for (int col = 0; col < width; col++) {
 			hookAvailable[row][col].resize(4);
 			if (board.getTile(row, col) != NULL) {
-				if (row > 0 && board.getTile(row - 1, col) == NULL) {
-					Hook h = { row, col, UP };
-					hookAvailable[row][col][UP] = true;
-					hooks.push_back(h);
-				}
-				if (row < height - 1 && board.getTile(row + 1, col) == NULL) {
-					Hook h = { row, col, DOWN };
+				if (row == 0 || board.getTile(row - 1, col) == NULL) {
+					ESHook hDown = { row, col, DOWN };
 					hookAvailable[row][col][DOWN] = true;
-					hooks.push_back(h);
+					hooks.push_back(hDown);
+					if (row > 0) {
+						ESHook hUp = { row, col, UP };
+						hookAvailable[row][col][UP] = true;
+						hooks.push_back(hUp);
+					}
 				}
-				if (col > 0 && board.getTile(row, col - 1) == NULL) {
-					Hook h = { row, col, LEFT };
-					hookAvailable[row][col][LEFT] = true;
-					hooks.push_back(h);
-				}
-				if (col < width - 1 && board.getTile(row, col + 1) == NULL) {
-					Hook h = { row, col, RIGHT };
+				if (col == 0 || board.getTile(row, col - 1) == NULL) {
+					ESHook hRight = { row, col, RIGHT };
 					hookAvailable[row][col][RIGHT] = true;
-					hooks.push_back(h);
+					hooks.push_back(hRight);
+					if (col > 0) {
+						ESHook hLeft = { row, col, LEFT };
+						hookAvailable[row][col][LEFT] = true;
+						hooks.push_back(hLeft);
+					}
 				}
 			}
 			else {
 				if (((row + 1 < height && board.getTile(row + 1, col) != NULL) || (row - 1 >= 0 && board.getTile(row - 1, col) != NULL))
 						&& !(col + 1 < width && board.getTile(row, col + 1) != NULL) && !(col > 0 && board.getTile(row, col - 1) != NULL)) {
 					if (col > 0 && !hookAvailable[row][col - 1][LEFT] && !hookAvailable[row][col - 1][RIGHT]) {
-						Hook h = { row, col, LEFT };
+						ESHook h = { row, col, LEFT };
 						hookAvailable[row][col][LEFT] = true;
 						hooks.push_back(h);
 					}
 					if (col < width - 1 && board.getTile(row, col + 1) == NULL) {
-						Hook h = { row, col, RIGHT };
+						ESHook h = { row, col, RIGHT };
 						hookAvailable[row][col][RIGHT] = true;
 						hooks.push_back(h);
 					}
@@ -107,12 +128,12 @@ std::vector<ESPlayer::Hook> ESPlayer::getHooks(const Board& board) {
 				if (((col + 1 < width && board.getTile(row, col + 1) != NULL) || (col - 1 >= 0 && board.getTile(row, col - 1) != NULL))
 						&& !(row + 1 < height && board.getTile(row + 1, col) != NULL) && !(row > 0 && board.getTile(row - 1, col) != NULL)) {
 					if (row > 0 && !hookAvailable[row - 1][col][UP] && !hookAvailable[row - 1][col][DOWN] && !(row < height - 1 && board.getTile(row + 1, col) != NULL)) {
-						Hook h = { row, col, UP };
+						ESHook h = { row, col, UP };
 						hookAvailable[row][col][UP] = true;
 						hooks.push_back(h);
 					}
 					if (row < height - 1 && board.getTile(row + 1, col) == NULL) {
-						Hook h = { row, col, DOWN };
+						ESHook h = { row, col, DOWN };
 						hookAvailable[row][col][DOWN] = true;
 						hooks.push_back(h);
 					}

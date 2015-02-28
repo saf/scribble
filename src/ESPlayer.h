@@ -10,19 +10,15 @@
 
 #include "Game.h"
 #include "Trie.h"
+#include "ESDictionary.h"
 
 class ESPlayer : public Player {
 private:
-	enum HookDirection { LEFT, RIGHT, UP, DOWN };
-	struct Hook {
-		int row;
-		int col;
-		enum HookDirection direction;
-	};
+	ESDictionary &dictionary;
 
-	std::vector<Hook> getHooks(const Board& board);
+	std::vector<ESHook> getHooks(const Board& board);
 public:
-	ESPlayer();
+	ESPlayer(ESDictionary &dict);
 	virtual ~ESPlayer();
 
 	virtual void gameStarts(int yourId, const PlayerState &state);

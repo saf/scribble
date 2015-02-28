@@ -21,12 +21,12 @@ public:
 	Dictionary(const Alphabet &alphabet);
 	virtual ~Dictionary();
 
-	void readFromStream(std::wistream &stream);
-	void readFromFile(std::string &filename);
+	virtual void readFromStream(std::wistream &stream);
+	virtual void readFromFile(std::string &filename);
 
-	bool check(std::wstring &word);
+	virtual bool check(std::wstring &word);
 
-	int getSize();
+	virtual int getSize();
 };
 
 #endif /* DICTIONARY_H_ */
