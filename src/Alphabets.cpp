@@ -28,6 +28,14 @@ int Alphabet::getIndex(unsigned wchar_t letter) const {
 	throw std::string("Failed to find index for code point.");
 }
 
+wchar_t Alphabet::getLetter(int index) const {
+	if (index <= L'Z' - L'A') {
+		return L'A' + index;
+	} else {
+		return this->diacritics->at(L'Z' - L'A' + 1 + index);
+	}
+}
+
 PolishAlphabet::PolishAlphabet() : Alphabet(std::wstring(L"ĄĆĘŁŃÓŚŹŻ#")) {};
 
 EnglishAlphabet::EnglishAlphabet() : Alphabet(std::wstring(L"#")) {};

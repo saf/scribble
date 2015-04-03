@@ -40,8 +40,8 @@ class ESTree : public Trie {
 private:
 	void findMovesNW(ESBoardInfo &bi, ESHook &hook, std::vector<Tile *> &tiles, void (*callback)(Move *move, void *context), void *context);
 	void findMovesSE(ESBoardInfo &bi, ESHook &hook, std::vector<Tile *> &tiles, void (*callback)(Move *move, void *context), void *context);
-	void findMovesInRowOrCol(std::vector<wchar_t> &rowOrCol, int startPos, std::vector<Tile *> &tiles, void (*callback)(Move *move, void *context), void *context);
-	void findMovesInSubtree(Node *node, std::vector<wchar_t> &rowOrCol, int startPos, std::vector<Tile *> &tiles, std::vector<bool> &usedTiles, void (*callback)(Move *, void *), void *context);
+	void findMovesInRowOrCol(std::vector<wchar_t> &rowOrCol, int startPos, Move *partialMove, std::vector<Tile *> &tiles, void (*callback)(Move *move, void *context), void *context);
+	void findMovesInSubtree(const Node *node, std::vector<wchar_t> &rowOrCol, int startPos, Move *partialMove, std::vector<Tile *> &tiles, std::vector<bool> &usedTiles, void (*callback)(Move *, void *), void *context);
 public:
 	ESTree(Alphabet &alphabet);
 	virtual ~ESTree();

@@ -17,8 +17,16 @@ Trie::Node::~Node() {
 	delete this->children;
 }
 
-Trie::Node *Trie::Node::getParent() const {
+Trie::Node *Trie::Node::getParent() {
 	return parent;
+}
+
+const Trie::Node *Trie::Node::getParent() const {
+	return parent;
+}
+
+const std::vector<Trie::Node *>& Trie::Node::getChildren() const {
+	return *children;
 }
 
 void Trie::Node::insert(int index, Node *node) {
@@ -29,7 +37,11 @@ Trie::Node *Trie::Node::find(int index) {
 	return (*this->children)[index];
 }
 
-bool Trie::Node::isFinal() {
+const Trie::Node *Trie::Node::find(int index) const {
+	return (*this->children)[index];
+}
+
+bool Trie::Node::isFinal() const {
 	return this->final;
 }
 
@@ -102,12 +114,12 @@ void Trie::insert(const wchar_t *word) {
 	this->insert(s);
 }
 
-bool Trie::find(std::wstring &word) {
-	Node *node = &this->root;
+bool Trie::find(std::wstring &word) const {
+	const Node *node = &this->root;
 	for (std::wstring::iterator it = word.begin(); it != word.end(); it++) {
 		wchar_t ch = *it;
 		int index = this->alphabet->getIndex(ch);
-		Node *child = node->find(index);
+		const Node *child = node->find(index);
 		if (child == NULL) {
 			return false;
 		} else {
@@ -117,7 +129,7 @@ bool Trie::find(std::wstring &word) {
 	return node->isFinal();
 }
 
-bool Trie::find(const wchar_t *word) {
+bool Trie::find(const wchar_t *word) const {
 	std::wstring s(word);
 	return this->find(s);
 }

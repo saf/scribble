@@ -36,52 +36,86 @@ void ESTree::findMovesAtHook(ESBoardInfo &bi, ESHook &hook, std::vector<Tile *> 
 
 void ESTree::findMovesNW(ESBoardInfo &bi, ESHook &hook, std::vector<Tile *> &tiles, void (*callback)(Move *move, void *context), void *context) {
 	ESCallbackContext ctx = { callback, context, hook.row, hook.col, bi };
+	std::vector<Tile *> moveTiles;
 
 	if (hook.direction == UP) {
 		std::vector<wchar_t> column = bi.columns[ctx.startCol];
 		ctx.startRow--;
 		while (ctx.startRow >= 0 && (ctx.startRow == 0 || bi.board.getTile(ctx.startRow - 1, ctx.startCol) == NULL)) {
-			this->findMovesInRowOrCol(column, ctx.startRow, tiles, moveCheckingCallback, &ctx);
+			Move moveTemplate(ctx.startRow, ctx.startCol, Move::VERTICAL, moveTiles);
+			this->findMovesInRowOrCol(column, ctx.startRow, &moveTemplate, tiles, moveCheckingCallback, &ctx);
 			ctx.startRow--;
 		}
 	} else {
 		std::vector<wchar_t> row = bi.rows[ctx.startRow];
 		ctx.startCol--;
 		while (ctx.startCol >= 0 && (ctx.startCol == 0 || bi.board.getTile(ctx.startRow, ctx.startCol - 1) == NULL)) {
-			this->findMovesInRowOrCol(row, ctx.startCol, tiles, moveCheckingCallback, &ctx);
+			Move moveTemplate(ctx.startRow, ctx.startCol, Move::HORIZONTAL, moveTiles);
+			this->findMovesInRowOrCol(row, ctx.startCol, &moveTemplate, tiles, moveCheckingCallback, &ctx);
 		}
 	}
 }
 
 void ESTree::findMovesSE(ESBoardInfo &bi, ESHook &hook, std::vector<Tile *> &tiles, void (*callback)(Move *move, void *context), void *context) {
 	ESCallbackContext ctx = { callback, context, hook.row, hook.col, bi };
+	std::vector<Tile *> *moveTiles;
 
 	if (hook.direction == DOWN) {
+		Move moveTemplate(ctx.startRow, ctx.startCol, Move::VERTICAL, *moveTiles);
 		std::vector<wchar_t> column = bi.columns[hook.col];
-		this->findMovesInRowOrCol(column, hook.row, tiles, moveCheckingCallback, &ctx);
+		this->findMovesInRowOrCol(column, hook.row, &moveTemplate, tiles, moveCheckingCallback, &ctx);
 	} else {
+		Move moveTemplate(ctx.startRow, ctx.startCol, Move::HORIZONTAL, *moveTiles);
 		std::vector<wchar_t> row = bi.rows[hook.row];
-		this->findMovesInRowOrCol(row, hook.col, tiles, moveCheckingCallback, &ctx);
+		this->findMovesInRowOrCol(row, hook.col, &moveTemplate, tiles, moveCheckingCallback, &ctx);
 	}
 }
 
-void ESTree::findMovesInRowOrCol(std::vector<wchar_t> &rowOrCol, int startPos, std::vector<Tile *> &tiles, void (*callback)(Move *, void *), void *context) {
+void ESTree::findMovesInRowOrCol(std::vector<wchar_t> &rowOrCol, int startPos, Move *partialMove, std::vector<Tile *> &tiles, void (*callback)(Move *, void *), void *context) {
 	std::vector<bool> usedTiles(tiles.size());
-	this->findMovesInSubtree(&this->root, rowOrCol, startPos, tiles, usedTiles, callback, context);
+	this->findMovesInSubtree(&this->root, rowOrCol, startPos, partialMove, tiles, usedTiles, callback, context);
 }
 
-void ESTree::findMovesInSubtree(Node *node, std::vector<wchar_t> &rowOrCol, int startPos, std::vector<Tile *> &tiles, std::vector<bool> &usedTiles, void (*callback)(Move *, void *), void *context) {
-	for (int i = 0; i < tiles.size(); i++) {
-		if (!usedTiles[i]) {
-			Tile *tile = tiles[i];
-			int index = alphabet->getIndex(tile->getLetter());
-			Node *child = node->find(index);
-			if (child != NULL) {
-				usedTiles[i] = true;
-				this->findMovesInSubtree(child, rowOrCol, startPos + 1, tiles, usedTiles, callback, context);
-				usedTiles[i] = false;
+void ESTree::findMovesInSubtree(const Node *node, std::vector<wchar_t> &rowOrCol, int startPos, Move *partialMove, std::vector<Tile *> &tiles, std::vector<bool> &usedTiles, void (*callback)(Move *, void *), void *context) {
+
+	if (startPos < rowOrCol.size() && rowOrCol[startPos] != L'.') {
+		const Node *child = node->find(alphabet->getIndex(rowOrCol[startPos]));
+		if (child != NULL) {
+			findMovesInSubtree(child, rowOrCol, startPos, partialMove, tiles, usedTiles, callback, context);
+		}
+	} else {
+		if (node->isFinal()) {
+			callback(partialMove, context);
+		}
+
+		if (startPos < rowOrCol.size()) {
+			for (int i = 0; i < tiles.size(); i++) {
+				if (!usedTiles[i]) {
+					Tile *tile = tiles[i];
+					usedTiles[i] = true;
+					partialMove->getTiles().push_back(tile);
+
+					if (tile->isBlank()) {
+						BlankTile *blank = static_cast<BlankTile *>(tile);
+						std::vector<wchar_t>& blankAssignment = partialMove->getBlankAssignment();
+						for (int li = 0; li < alphabet->getLetterCount(); li++) {
+							const Node *child = node->find(li);
+							blankAssignment.push_back(alphabet->getLetter(li));
+							this->findMovesInSubtree(child, rowOrCol, startPos + 1, partialMove, tiles, usedTiles, callback, context);
+							blankAssignment.pop_back();
+						}
+					} else {
+						int index = alphabet->getIndex(tile->getLetter());
+						const Node *child = node->find(index);
+						if (child != NULL) {
+							this->findMovesInSubtree(child, rowOrCol, startPos + 1, partialMove, tiles, usedTiles, callback, context);
+						}
+					}
+
+					partialMove->getTiles().pop_back();
+					usedTiles[i] = false;
+				}
 			}
 		}
 	}
-	/* #TODO existing letters on the board, handle blanks, etc. */
 }

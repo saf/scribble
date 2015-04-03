@@ -172,7 +172,7 @@ LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
 
 			Move::Direction dir = direction[0] == '+' ? Move::VERTICAL : Move::HORIZONTAL;
 			std::vector<Tile *> moveTiles = IsoTileGame::findTilesForPlayerMove(*game->getCurrentState(), row - 1, col, dir, words);
-			Move *move = new Move(row - 1, col, dir, &moveTiles);
+			Move *move = new Move(row - 1, col, dir, moveTiles);
 			decisionData.move = move;
 			PlayerDecision decision(PlayerDecision::MOVE, decisionData);
 			assert(points == game->getCurrentState()->getBoard().getMoveScore(*move));

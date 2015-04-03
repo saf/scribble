@@ -24,15 +24,23 @@ private:
 	int startRow;
 	int startColumn;
 	enum Direction direction;
-	std::vector<Tile *> *tiles;
+	std::vector<Tile *> tiles;
+	std::vector<wchar_t> blankAssignment;
 
 public:
-	Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *> *tiles);
+	Move(int startRow, int startColumn, enum Direction direction);
+	Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles);
+	Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles, std::vector<wchar_t>& blankAssignment);
 
 	int getStartRow();
 	int getStartColumn();
 	enum Direction getDirection();
-	std::vector<Tile *> *getTiles();
+
+	std::vector<Tile *>& getTiles();
+	const std::vector<Tile *>& getTiles() const;
+
+	std::vector<wchar_t>& getBlankAssignment();
+	const std::vector<wchar_t>& getBlankAssignment() const;
 };
 
 

@@ -15,6 +15,7 @@ public:
 	virtual ~Alphabet();
 
 	virtual int getIndex(unsigned wchar_t letter) const;
+	virtual wchar_t getLetter(int index) const;
 	int getLetterCount() const;
 };
 

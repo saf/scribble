@@ -78,7 +78,7 @@ bool Board::checkMove(Move &move) const {
 	enum Move::Direction direction = move.getDirection();
 	int startRow = move.getStartRow();
 	int startColumn = move.getStartColumn();
-	std::vector<Tile *> *tiles = move.getTiles();
+	std::vector<Tile *>& tiles = move.getTiles();
 	int row = startRow;
 	int col = startColumn;
 
@@ -94,7 +94,7 @@ bool Board::checkMove(Move &move) const {
 		}
 	}
 
-	for (std::vector<Tile *>::const_iterator it = tiles->begin(); it != tiles->end(); it++) {
+	for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
 		if (row >= this->height || col >= this->width) {
 			return false;
 		}
@@ -248,12 +248,12 @@ int Board::getMoveScore(Move &move) const {
 	enum Move::Direction orthogonal = direction == Move::HORIZONTAL ? Move::VERTICAL : Move::HORIZONTAL;
 	int startRow = move.getStartRow();
 	int startColumn = move.getStartColumn();
-	std::vector<Tile *> *tiles = move.getTiles();
+	std::vector<Tile *>& tiles = move.getTiles();
 	int score = 0;
 	int row = startRow;
 	int col = startColumn;
 
-	score += getNewWordScore(tiles, row, col, direction);
+	score += getNewWordScore(&tiles, row, col, direction);
 
 	if (direction == Move::HORIZONTAL) {
 		while (col < this->width && this->tiles[row][col] != NULL) {
@@ -265,8 +265,8 @@ int Board::getMoveScore(Move &move) const {
 		}
 	}
 
-	for (int i = 0; i < tiles->size(); i++) {
-		score += getNewWordScore(tiles, row, col, orthogonal, i);
+	for (int i = 0; i < tiles.size(); i++) {
+		score += getNewWordScore(&tiles, row, col, orthogonal, i);
 
 		if (direction == Move::HORIZONTAL) {
 			col++;
@@ -288,7 +288,7 @@ void Board::applyMove(Move &move) {
 	enum Move::Direction direction = move.getDirection();
 	int row = move.getStartRow();
 	int col = move.getStartColumn();
-	std::vector<Tile *> *tiles = move.getTiles();
+	std::vector<Tile *>& tiles = move.getTiles();
 
 	if (!this->checkMove(move)) {
 		throw InvalidMove();
@@ -302,7 +302,7 @@ void Board::applyMove(Move &move) {
 		}
 	}
 
-	for (std::vector<Tile *>::const_iterator it = tiles->begin(); it != tiles->end(); it++) {
+	for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
 		this->putTile(row, col, **it);
 
 		if (direction == Move::HORIZONTAL) {

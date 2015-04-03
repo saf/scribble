@@ -65,7 +65,7 @@ void GameState::applyDecision(const PlayerDecision &decision) {
 			Move *move = decision.data.move;
 			int score = this->board.getMoveScore(*move);
 			this->scores[turn] += score;
-			for (std::vector<Tile *>::const_iterator it = move->getTiles()->begin(); it != move->getTiles()->end(); it++) {
+			for (std::vector<Tile *>::const_iterator it = move->getTiles().begin(); it != move->getTiles().end(); it++) {
 				this->racks[turn].erase(*it);
 			}
 			this->board.applyMove(*decision.data.move);

@@ -33,6 +33,8 @@ public:
 		Node *getParent();
 		const Node *getParent() const;
 
+		const std::vector<Node *>& getChildren() const;
+
 		bool isFinal() const;
 		void setFinal();
 	};
