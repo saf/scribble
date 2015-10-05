@@ -8,32 +8,27 @@
 #include <algorithm>
 #include "GameState.h"
 
-GameState::GameState(Game &game, Board &board, std::set<Tile *> &bag) :
+GameState::GameState(Game& game, Board& board, std::set<Tile *>& bag)
+		: game(game),
+		  turn(0),
+		  board(board),
+		  bag(bag),
 		  racks(game.getPlayerCount()),
-		  scores(game.getPlayerCount(), 0),
-		  board(board) {
-	this->game = &game;
-	this->bag = bag;
-	this->turn = 0;
+		  scores(game.getPlayerCount(), 0) {
 }
 
-GameState::GameState(const GameState &state) : game(state.game), board(state.board) {
-	*this = state;
-}
-
-GameState &GameState::operator=(const GameState &state) {
-	this->game = state.game;
-	this->board = state.board;
-	this->bag = state.bag;
-	this->turn = state.turn;
-	this->racks = state.racks;
-	this->scores = state.scores;
-	return *this;
+GameState::GameState(const GameState& other)
+		: game(other.game),
+		  turn(other.turn),
+		  board(other.board),
+		  bag(other.bag),
+		  racks(other.racks),
+		  scores(other.scores) {
 }
 
 void GameState::repopulateRack(int playerId) {
 	std::set<Tile *>& rack = racks[playerId];
-	int count = game->getRackSize() - rack.size();
+	int count = game.getRackSize() - rack.size();
 	std::vector<Tile *> tiles;
 
 	if (count > 0) {
@@ -59,27 +54,34 @@ void GameState::repopulateRack(int playerId, const std::vector<Tile *>& tiles) {
 	}
 }
 
-void GameState::applyDecision(const PlayerDecision &decision) {
+std::shared_ptr<GameState> GameState::stateAfterDecision(const PlayerDecision &decision) const {
+	std::shared_ptr<GameState> newState(new GameState(*this));
+
 	switch (decision.type) {
 		case PlayerDecision::MOVE: {
 			Move *move = decision.data.move;
 			int score = this->board.getMoveScore(*move);
-			this->scores[turn] += score;
+			newState->scores[turn] += score;
 			for (std::vector<Tile *>::const_iterator it = move->getTiles().begin(); it != move->getTiles().end(); it++) {
-				this->racks[turn].erase(*it);
+				newState->racks[turn].erase(*it);
 			}
-			this->board.applyMove(*decision.data.move);
+			newState->board.applyMove(*decision.data.move);
 			break;
 		}
 		case PlayerDecision::EXCHANGE: {
 			const std::vector<Tile *> &tiles = *decision.data.exchangedTiles;
 			for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
-				this->racks[this->turn].erase(*it);
-				this->hand.push_back(*it);
+				newState->racks[turn].erase(*it);
+				newState->hand.push_back(*it);
 			}
 			break;
 		}
+		case PlayerDecision::PASS: {
+			break;
+		}
 	}
+
+	return newState;
 }
 
 int GameState::getTurn() const {
@@ -87,7 +89,7 @@ int GameState::getTurn() const {
 }
 
 void GameState::advanceTurn() {
-	this->turn = (this->turn + 1) % game->getPlayerCount();
+	this->turn = (this->turn + 1) % game.getPlayerCount();
 	returnHandToBag();
 }
 
@@ -128,7 +130,7 @@ const std::vector<int>& GameState::getScores() const {
 	return scores;
 }
 
-Game *GameState::getGame() const {
+const Game& GameState::getGame() const {
 	return game;
 }
 
@@ -145,25 +147,29 @@ bool GameState::isFinal() const {
 	}
 }
 
-PlayerState::PlayerState(const GameState &s) : GameState(s) {}
+PlayerState::PlayerState(const std::shared_ptr<GameState> state, int playerId)
+		: state_(state),
+		  playerId_(playerId) {
+}
 
 const Board& PlayerState::getBoard() const {
-	return GameState::getBoard();
+	return state_->getBoard();
 }
 
 const std::set<Tile *>& PlayerState::getRack() const {
-	return GameState::getRacks().at(getTurn());
+	return state_->getRacks().at(playerId_);
 }
 
 const std::vector<int>& PlayerState::getScores() const {
-	return GameState::getScores();
+	return state_->getScores();
 }
 
 int PlayerState::getPlayerCount() const {
-	return GameState::getGame()->getPlayerCount();
+	return state_->getGame().getPlayerCount();
 }
 
-void PlayerState::applyDecision(const PlayerDecision &decision) {
-	GameState::applyDecision(decision);
+PlayerState PlayerState::applyDecision(const PlayerDecision &decision) {
+	auto newState = state_->stateAfterDecision(decision);
+	return PlayerState(std::move(newState), playerId_);
 }
 

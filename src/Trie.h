@@ -8,9 +8,10 @@
 #ifndef TRIE_H_
 #define TRIE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
-#include "Alphabets.h"
+#include "Alphabet.h"
 
 class Trie {
 public:
@@ -18,44 +19,34 @@ public:
 
 	class Node {
 	protected:
-		Node *parent;
-		std::vector<Node *> *children;
+		const Node *parent;
+		std::vector<std::unique_ptr<Node>> children;
 		bool final;
 	public:
-		Node(int childCount, Node *parent = NULL);
-		~Node();
+		Node(const Alphabet& alphabet, const Node* parent);
 
-		void insert(int index, Node *child);
+		std::unique_ptr<Node>& find(int index);
+		const std::unique_ptr<Trie::Node>& find(int index) const;
 
-		Node *find(int index);
-		const Node *find(int index) const;
+		const Node* getParent() const;
 
-		Node *getParent();
-		const Node *getParent() const;
-
-		const std::vector<Node *>& getChildren() const;
+		const std::vector<std::unique_ptr<Trie::Node>>& getChildren() const;
 
 		bool isFinal() const;
 		void setFinal();
 	};
 
-protected:
-	Node root;
-	const Alphabet *alphabet;
-
-	int lastInsertedLength;
-	Node *lastInsertedNode;
-	wchar_t lastInsertedWord[MAX_WORD_LENGTH];
 public:
+	Trie(Alphabet alphabet);
+	virtual ~Trie() {};
 
-	Trie(const Alphabet &alphabet);
-	virtual ~Trie();
+	virtual void insert(const Word& word);
 
-	virtual void insert(std::wstring &word);
-	virtual void insert(const wchar_t *word);
+	virtual bool find(const Word& word) const;
 
-	virtual bool find(std::wstring &word) const;
-	virtual bool find(const wchar_t *word) const;
+protected:
+	Node root_;
+	const Alphabet alphabet_;
 };
 
 #endif /* TRIE_H_ */

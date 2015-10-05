@@ -7,129 +7,67 @@
 
 #include "Trie.h"
 
-Trie::Node::Node(int childCount, Node *parent) {
-	this->children = new std::vector<Node *>(childCount);
-	this->final = false;
-	this->parent = parent;
+Trie::Node::Node(const Alphabet& alphabet, const Node* parent)
+		: parent(parent),
+		  children(alphabet.getLetterCount()),
+		  final(false) {
 }
 
-Trie::Node::~Node() {
-	delete this->children;
-}
-
-Trie::Node *Trie::Node::getParent() {
+const Trie::Node* Trie::Node::getParent() const {
 	return parent;
 }
 
-const Trie::Node *Trie::Node::getParent() const {
-	return parent;
+const std::vector<std::unique_ptr<Trie::Node>>& Trie::Node::getChildren() const {
+	return children;
 }
 
-const std::vector<Trie::Node *>& Trie::Node::getChildren() const {
-	return *children;
+std::unique_ptr<Trie::Node>& Trie::Node::find(int index) {
+	return children[index];
 }
 
-void Trie::Node::insert(int index, Node *node) {
-	(*this->children)[index] = node;
-}
-
-Trie::Node *Trie::Node::find(int index) {
-	return (*this->children)[index];
-}
-
-const Trie::Node *Trie::Node::find(int index) const {
-	return (*this->children)[index];
+const std::unique_ptr<Trie::Node>& Trie::Node::find(int index) const {
+	return children[index];
 }
 
 bool Trie::Node::isFinal() const {
-	return this->final;
+	return final;
 }
 
 void Trie::Node::setFinal() {
-	this->final = true;
+	final = true;
 }
 
-Trie::Trie(const Alphabet &alphabet) : alphabet(&alphabet), root(alphabet.getLetterCount()) {
-	this->lastInsertedLength = 0;
-	this->lastInsertedNode = &this->root;
-	for (int i = 0; i < MAX_WORD_LENGTH; i++) {
-		this->lastInsertedWord[i] = L'\0';
-	}
+Trie::Trie(Alphabet alphabet)
+		: root_(alphabet, nullptr),
+		  alphabet_(std::move(alphabet)) {
 }
 
-Trie::~Trie() {}
-
-void Trie::insert(std::wstring &word) {
-	Node *node = &this->root;
-	for (std::wstring::iterator it = word.begin(); it != word.end(); it++) {
-		wchar_t ch = *it;
-		int index = this->alphabet->getIndex(ch);
-		Node *child = node->find(index);
-		if (child == NULL) {
-			child = new Node(this->alphabet->getLetterCount(), node);
-			node->insert(index, child);
+void Trie::insert(const Word& word) {
+	Node *node = &root_;
+	for (Word::const_iterator it = word.begin(); it != word.end(); it++) {
+		const Letter& l = *it;
+		int index = alphabet_.getIndex(l);
+		std::unique_ptr<Node>& child = node->find(index);
+		if (child == nullptr) {
+			child.reset(new Node(alphabet_, node));
 		}
-		node = child;
+		node = child.get();
 	}
 	node->setFinal();
 }
 
-//void Trie::insert(std::wstring &word) {
-//	Node *node = this->lastInsertedNode;
-//	std::wstring::iterator it = word.begin();
-//	int commonPrefixLength = 0;
-//	int i;
-//
-//	while (it != word.end() && *it == this->lastInsertedWord[commonPrefixLength]) {
-//		it++;
-//		commonPrefixLength++;
-//	}
-//
-//	while (this->lastInsertedLength > commonPrefixLength) {
-//		this->lastInsertedNode = this->lastInsertedNode->getParent();
-//		this->lastInsertedLength--;
-//	}
-//
-//	node = this->lastInsertedNode;
-//	i = commonPrefixLength + 1;
-//
-//	while (it != word.end()) {
-//		wchar_t ch = *it;
-//		int index = this->alphabet->getIndex(ch);
-//		Node *child = node->find(index);
-//		if (child == NULL) {
-//			child = new Node(this->alphabet->getLetterCount(), node);
-//			node->insert(index, child);
-//		}
-//		node = child;
-//		this->lastInsertedWord[i++] = ch;
-//	}
-//	this->lastInsertedWord[i] = L'\0';
-//	this->lastInsertedNode = node;
-//	this->lastInsertedLength = i;
-//}
-
-void Trie::insert(const wchar_t *word) {
-	std::wstring s(word);
-	this->insert(s);
-}
-
-bool Trie::find(std::wstring &word) const {
-	const Node *node = &this->root;
-	for (std::wstring::iterator it = word.begin(); it != word.end(); it++) {
-		wchar_t ch = *it;
-		int index = this->alphabet->getIndex(ch);
-		const Node *child = node->find(index);
-		if (child == NULL) {
+bool Trie::find(const Word& word) const {
+	const Node *node = &root_;
+	for (Word::const_iterator it = word.begin(); it != word.end(); it++) {
+		const Letter& l = *it;
+		int index = alphabet_.getIndex(l);
+		const std::unique_ptr<Node>& child = node->find(index);
+		if (child == nullptr) {
 			return false;
 		} else {
-			node = child;
+			node = child.get();
 		}
 	}
 	return node->isFinal();
 }
 
-bool Trie::find(const wchar_t *word) const {
-	std::wstring s(word);
-	return this->find(s);
-}

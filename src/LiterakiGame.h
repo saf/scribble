@@ -30,9 +30,9 @@ public:
 	LiterakiGame(std::vector<Player *> players);
 	virtual ~LiterakiGame();
 
-	int getRackSize();
+	int getRackSize() const;
 
-	static LiterakiGame* readFromStream(std::wistream &s);
+	static LiterakiGame readFromStream(std::wistream &s);
 };
 
 #endif /* LITERAKI_H_ */

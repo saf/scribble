@@ -6,24 +6,22 @@
  */
 
 #include <fstream>
+#include <utility>
+
 #include "Dictionary.h"
 
-Dictionary::Dictionary(const Alphabet &alphabet) {
-	this->size = 0;
-	this->tree = new Trie(alphabet);
-}
-
-Dictionary::~Dictionary() {
-	delete this->tree;
+Dictionary::Dictionary(Alphabet alphabet)
+		: entryCount_(0),
+		  tree_(std::move(alphabet)) {
 }
 
 void Dictionary::readFromStream(std::wistream &s) {
 	while (!s.eof()) {
-		wchar_t word[Trie::MAX_WORD_LENGTH];
+		Letter word[Trie::MAX_WORD_LENGTH];
 		s.getline(word, Trie::MAX_WORD_LENGTH);
 
-		tree->insert(word);
-		this->size++;
+		tree_.insert(Word(&word[0]));
+		entryCount_++;
 	}
 }
 
@@ -34,9 +32,9 @@ void Dictionary::readFromFile(std::string &filename) {
 }
 
 int Dictionary::getSize() {
-	return this->size;
+	return this->entryCount_;
 }
 
-bool Dictionary::check(std::wstring &word) {
-	return tree->find(word);
+bool Dictionary::check(const Word& word) {
+	return tree_.find(word);
 }

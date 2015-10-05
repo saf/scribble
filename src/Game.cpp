@@ -12,31 +12,23 @@ PlayerDecision::PlayerDecision(enum PlayerDecision::Type type, union PlayerDecis
 	this->data = data;
 }
 
-PlayerDecision::PlayerDecision(Move *move) {
-	this->type = PlayerDecision::MOVE;
+PlayerDecision::PlayerDecision(Move *move)
+		: type(PlayerDecision::MOVE) {
 	this->data.move = move;
 }
 
-Game::Game(std::vector<Player *> &players) {
-	this->players = players;
-	this->currentState = NULL;
+Game::Game(std::vector<Player *> &players)
+		: players(players) {
 }
 
 void Game::initializeState() {
-	Board board = this->getInitialBoard();
-	std::set<Tile *> bag = this->getInitialBag();
-	this->currentState = new GameState(*this, board, bag);
+	Board board = getInitialBoard();
+	std::set<Tile *> bag = getInitialBag();
+	currentState.reset(new GameState(*this, board, bag));
 }
 
-GameState *Game::getCurrentState() {
-	return this->currentState;
-}
-
-Game::~Game() {
-	for (std::vector<GameState *>::iterator it = stateHistory.begin(); it != stateHistory.end(); it++) {
-		delete &(*it);
-	}
-	delete this->currentState;
+const GameState& Game::getCurrentState() {
+	return *currentState;
 }
 
 int Game::getPlayerCount() const {
@@ -46,37 +38,30 @@ int Game::getPlayerCount() const {
 void Game::oneTurn() {
 	int turn = currentState->getTurn();
 	Player *currentPlayer = players[turn];
-	PlayerState playerState(*currentState);
+	PlayerState playerState(currentState, turn);
 
 	struct PlayerDecision decision = currentPlayer->makeDecision(playerState);
-	this->applyDecision(decision);
+	applyDecision(decision);
 
-	GameState *newState = currentState; /* currentState is changed by applyDecision */
-	PlayerState newPlayerState(*newState);
-	for (int i = 0; i < players.size(); i++) {
-		players[i]->playerDecisionMade(turn, decision, newPlayerState);
+	for (size_t i = 0; i < players.size(); i++) {
+		players[i]->playerDecisionMade(turn, decision, PlayerState(currentState, i));
 	}
 }
 
 void Game::applyDecision(PlayerDecision &decision) {
-	int turn = currentState->getTurn();
-	GameState *newState = new GameState(*currentState);
-	Player *currentPlayer = players[turn];
-
-	newState->applyDecision(decision);
+	auto newState = currentState->stateAfterDecision(decision);
 	newState->advanceTurn();
 
 	decisionHistory.push_back(decision);
-	stateHistory.push_back(currentState);
+	stateHistory.emplace_back(std::move(currentState));
 
-	currentState = newState;
+	currentState = std::move(newState);
 }
 
 void Game::play() {
 	initializeState();
-	PlayerState playerState(*currentState);
-	for (int i = 0; i < players.size(); i++) {
-		players[i]->gameStarts(i, playerState);
+	for (size_t i = 0; i < players.size(); i++) {
+		players[i]->gameStarts(i, PlayerState(currentState, i));
 	}
 
 	while (!currentState->isFinal()) {

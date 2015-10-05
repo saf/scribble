@@ -14,21 +14,12 @@ class Game;
 class PlayerDecision;
 
 class GameState {
-	protected:
-		Game *game;
-		int turn; /* cycles through 0 ... (playerCount-1) */
-		Board board;
-		std::set<Tile *> bag;
-		std::vector<std::set<Tile *> > racks;
-		std::vector<int> scores;
-
-		std::vector<Tile *> hand; /* Used for tiles exchanged out by a player. */
-		void returnHandToBag();
-
 	public:
 		GameState(Game &game, Board &board, std::set<Tile *> &bag);
 		GameState(const GameState &state);
-		GameState& operator=(const GameState &state);
+
+		GameState& operator=(const GameState &other) = delete;
+
 		virtual ~GameState() {};
 
 		int getTurn() const;
@@ -43,28 +34,41 @@ class GameState {
 		Board& getBoard();
 		const Board& getBoard() const;
 
-		Game *getGame() const;
+		const Game& getGame() const;
 
 		bool isFinal() const;
 
 		void repopulateRack(int playerId);
 		void repopulateRack(int playerId, const std::vector<Tile *>& tiles);
 
-		void applyDecision(const PlayerDecision &decision);
+		std::shared_ptr<GameState> stateAfterDecision(const PlayerDecision &decision) const;
+
+	protected:
+		const Game& game;
+		int turn; /* cycles through 0 ... (playerCount-1) */
+		Board board;
+		std::set<Tile *> bag;
+		std::vector<std::set<Tile *> > racks;
+		std::vector<int> scores;
+
+		std::vector<Tile *> hand; /* Used for tiles exchanged out by a player. */
+		void returnHandToBag();
+
 	};
 
-class PlayerState : private GameState {
-	private:
-
+class PlayerState {
 	public:
-		PlayerState(const GameState &state);
+		PlayerState(std::shared_ptr<GameState> state, int playerId_);
 
 		const Board &getBoard() const;
 		const std::set<Tile *>& getRack() const;
 		const std::vector<int>& getScores() const;
 		int getPlayerCount() const;
 
-		void applyDecision(const PlayerDecision &decision);
+		PlayerState applyDecision(const PlayerDecision &decision);
+	private:
+		const std::shared_ptr<GameState> state_;
+		int playerId_;
 };
 
 #endif /* GAMESTATE_H_ */

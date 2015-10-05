@@ -8,8 +8,10 @@
 #ifndef GAME_H_
 #define GAME_H_
 
+#include <memory>
 #include <set>
 #include <vector>
+
 #include "Move.h"
 #include "Board.h"
 #include "GameState.h"
@@ -33,30 +35,31 @@ public:
 	PlayerDecision(Move *move);
 };
 
-
 class Game {
-protected:
-	std::vector<Player *> players;
-
-	GameState *currentState;
-	std::vector<GameState *> stateHistory;
-	std::vector<PlayerDecision> decisionHistory;
-	virtual Board getInitialBoard() = 0;
-	virtual std::set<Tile *> getInitialBag() = 0;
-
 public:
 	Game(std::vector<Player *> &players);
-	virtual ~Game();
+	virtual ~Game() {};
 
-	virtual int getRackSize() = 0;
+	virtual int getRackSize() const = 0;
 	int getPlayerCount() const;
 
 	virtual void initializeState();
-	virtual GameState *getCurrentState();
+
+	const GameState& getCurrentState();
 
 	virtual void applyDecision(PlayerDecision &d);
 	virtual void oneTurn();
 	virtual void play();
+
+protected:
+	std::vector<Player *> players;
+
+	std::shared_ptr<GameState> currentState;
+
+	std::vector<std::shared_ptr<GameState>> stateHistory;
+	std::vector<PlayerDecision> decisionHistory;
+	virtual Board getInitialBoard() = 0;
+	virtual std::set<Tile *> getInitialBag() = 0;
 };
 
 class Player {

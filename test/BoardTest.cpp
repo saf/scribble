@@ -106,7 +106,7 @@ BOOST_FIXTURE_TEST_SUITE(firstMovePlacement, MoveManagementTestSetup);
 BOOST_AUTO_TEST_CASE(horizontalWordAtTopLeftCorner) {
 	Move m(0, 0, Move::HORIZONTAL, startTiles);
 	b.applyMove(m);
-	for (int i = 0; i < startTiles.size(); i++) {
+	for (size_t i = 0; i < startTiles.size(); i++) {
 		BOOST_CHECK_EQUAL(b.getTile(0, i)->getLetter(), startTiles[i]->getLetter());
 	}
 }
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(horizontalWordAtTopLeftCorner) {
 BOOST_AUTO_TEST_CASE(verticalWordAtTopLeftCorner) {
 	Move m(0, 0, Move::VERTICAL, startTiles);
 	b.applyMove(m);
-	for (int i = 0; i < startTiles.size(); i++) {
+	for (size_t i = 0; i < startTiles.size(); i++) {
 		BOOST_CHECK_EQUAL(b.getTile(i, 0)->getLetter(), startTiles[i]->getLetter());
 	}
 }
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(verticalWordAtTopLeftCorner) {
 BOOST_AUTO_TEST_CASE(horizontalWordAtBottomRightCorner) {
 	Move m(4, 1, Move::HORIZONTAL, startTiles);
 	b.applyMove(m);
-	for (int i = 0; i < startTiles.size(); i++) {
+	for (size_t i = 0; i < startTiles.size(); i++) {
 		BOOST_CHECK_EQUAL(b.getTile(4, 1 + i)->getLetter(), startTiles[i]->getLetter());
 	}
 }
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(horizontalWordAtBottomRightCorner) {
 BOOST_AUTO_TEST_CASE(verticalWordAtBottomRightCorner) {
 	Move m(2, 3, Move::VERTICAL, startTiles);
 	b.applyMove(m);
-	for (int i = 0; i < startTiles.size(); i++) {
+	for (size_t i = 0; i < startTiles.size(); i++) {
 		BOOST_CHECK_EQUAL(b.getTile(2 + i, 3)->getLetter(), startTiles[i]->getLetter());
 	}
 }

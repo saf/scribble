@@ -10,19 +10,27 @@
 #ifndef TILE_H_
 #define TILE_H_
 
+#include "Alphabet.h"
+
 class Tile {
-protected:
-	const wchar_t letter;
-	const int color;
-	const int points;
 public:
-	Tile(wchar_t l, int p, int c = 0) : letter(l), points(p), color(c) {};
+	Tile(const Letter& l, int p, int c = 0)
+		: letter(l),
+		  color(c),
+		  points(p) {
+	};
+
 	virtual ~Tile() {};
 
 	virtual wchar_t getLetter() const { return letter; }
 	int getColor() const { return color; }
 	int getPoints() const { return points; }
 	virtual bool isBlank() const { return false; }
+
+protected:
+	const Letter letter;
+	const int color;
+	const int points;
 };
 
 class BlankTile : public Tile {

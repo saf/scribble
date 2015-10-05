@@ -9,24 +9,25 @@
 #define DICTIONARY_H_
 
 #include <iostream>
-#include "Alphabets.h"
+
+#include "Alphabet.h"
 #include "Trie.h"
 
 class Dictionary {
-protected:
-	Trie *tree;
-	int size;
-
 public:
-	Dictionary(const Alphabet &alphabet);
-	virtual ~Dictionary();
+	Dictionary(Alphabet alphabet);
+	virtual ~Dictionary() {}
 
 	virtual void readFromStream(std::wistream &stream);
 	virtual void readFromFile(std::string &filename);
 
-	virtual bool check(std::wstring &word);
+	virtual bool check(const Word& word);
 
 	virtual int getSize();
+
+protected:
+	int entryCount_;
+	Trie tree_;
 };
 
 #endif /* DICTIONARY_H_ */

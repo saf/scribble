@@ -112,18 +112,18 @@ Board LiterakiGame::getInitialBoard() {
 	return b;
 }
 
-int LiterakiGame::getRackSize() {
+int LiterakiGame::getRackSize() const {
 	return RACK_SIZE;
 }
 
-LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
+LiterakiGame LiterakiGame::readFromStream(std::wistream &s) {
 	IdlePlayer player1;
 	IdlePlayer player2;
 	std::vector<Player *> players;
 	players.push_back(&player1);
 	players.push_back(&player2);
-	LiterakiGame* game = new LiterakiGame(players);
-	game->initializeState();
+	LiterakiGame game(players);
+	game.initializeState();
 
 	int turn = 0;
 	int round = 1;
@@ -164,22 +164,22 @@ LiterakiGame* LiterakiGame::readFromStream(std::wistream &s) {
 			if (mainWordEnd != NULL) {
 				*mainWordEnd = L'\0';
 			}
-			std::vector<Tile *> missingRackTiles = IsoTileGame::findTilesForPlayerRack(*game->getCurrentState(), rack);
-			if (game->stateHistory.size() > 0) {
-				game->stateHistory.back()->repopulateRack(turn, missingRackTiles);
+			std::vector<Tile *> missingRackTiles = IsoTileGame::findTilesForPlayerRack(game.getCurrentState(), rack);
+			if (game.stateHistory.size() > 0) {
+				game.stateHistory.back()->repopulateRack(turn, missingRackTiles);
 			}
-			game->currentState->repopulateRack(turn, missingRackTiles);
+			game.currentState->repopulateRack(turn, missingRackTiles);
 
 			Move::Direction dir = direction[0] == '+' ? Move::VERTICAL : Move::HORIZONTAL;
-			std::vector<Tile *> moveTiles = IsoTileGame::findTilesForPlayerMove(*game->getCurrentState(), row - 1, col, dir, words);
+			std::vector<Tile *> moveTiles = IsoTileGame::findTilesForPlayerMove(game.getCurrentState(), row - 1, col, dir, words);
 			Move *move = new Move(row - 1, col, dir, moveTiles);
 			decisionData.move = move;
 			PlayerDecision decision(PlayerDecision::MOVE, decisionData);
-			assert(points == game->getCurrentState()->getBoard().getMoveScore(*move));
-			game->applyDecision(decision);
+			assert(points == game.getCurrentState().getBoard().getMoveScore(*move));
+			game.applyDecision(decision);
 		} else {
 			PlayerDecision decision(PlayerDecision::PASS, PlayerDecision::Data());
-			game->applyDecision(decision);
+			game.applyDecision(decision);
 		}
 
 		if (turn == 1) {

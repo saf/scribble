@@ -21,8 +21,8 @@ int main(int argc, const char **argv) {
 	fs.open(argv[1], std::fstream::in);
 	if (fs.is_open()) {
 		fs.imbue(locale);
-		LiterakiGame *g = LiterakiGame::readFromStream(fs);
-		printer.printBoard(g->getCurrentState()->getBoard());
+		LiterakiGame g = LiterakiGame::readFromStream(fs);
+		printer.printBoard(g.getCurrentState().getBoard());
 	} else {
 		std::cerr << "Failed to open " << argv[1] << std::endl;
 	}

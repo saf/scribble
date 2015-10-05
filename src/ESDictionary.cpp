@@ -7,7 +7,7 @@
 
 #include "ESDictionary.h"
 
-ESDictionary::ESDictionary(Alphabet &alphabet) : Dictionary(alphabet) {
+ESDictionary::ESDictionary(Alphabet alphabet) : Dictionary(std::move(alphabet)) {
 	delete this->tree; /* Delete base-class Trie created by our base class. */
 	this->tree = new ESTree(alphabet);
 }

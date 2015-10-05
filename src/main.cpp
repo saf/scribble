@@ -2,7 +2,7 @@
 #include <string>
 
 int main(int argc, char **argv) {
-	PolishAlphabet polishAlphabet;
+	Alphabet polishAlphabet(WORD("ĄĆĘŁŃÓŚŹŻ"));
 	Dictionary dict(polishAlphabet);
 
 	setlocale(LC_ALL, "");

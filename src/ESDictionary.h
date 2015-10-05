@@ -15,7 +15,7 @@ class ESDictionary : public Dictionary {
 protected:
 	ESTree *tree;
 public:
-	ESDictionary(Alphabet &alphabet);
+	ESDictionary(Alphabet alphabet);
 	virtual ~ESDictionary();
 
 	void findMovesAtHook(ESBoardInfo &bi, ESHook &hook, std::vector<Tile *> &tiles, void (*callback)(Move *move, void *context), void *context);
