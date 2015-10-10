@@ -280,6 +280,11 @@ int Board::getMoveScore(const Move &move) const {
 		}
 	}
 
+	// Bonus for placing 7 tiles.
+	if (move.getTiles().size() >= 7) {
+		score += 50;
+	}
+
 	return score;
 }
 

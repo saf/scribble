@@ -43,8 +43,11 @@ Tileset IsoTileGame::getInitialBag() {
 
 Tileset IsoTileGame::findTilesForPlayerRack(const GameState& state, const wchar_t *rackLetters) {
 	int turn = state.getTurn();
-	const Rack& rack = state.getRacks().at(turn);
-	Bag bag(state.getBag()); /* Create copy of the bag to safely remove found entries. */
+	Rack rack = state.getRacks().at(turn); /* Create copy of the rack to remove found items from rack
+	                                          in order to avoid reporting that a letter is found
+	                                          multiple times using the same tile */
+	Bag bag(state.getBag()); /* Create copy of the bag to safely remove found entries
+	                          * in order to avoid adding the same tile twice. */
 	Tileset tiles;
 
 	const wchar_t* p = rackLetters;
@@ -53,6 +56,7 @@ Tileset IsoTileGame::findTilesForPlayerRack(const GameState& state, const wchar_
 		bool found = false;
 		for (const auto& tilePtr : rack) {
 			if ((*p == L'_' && tilePtr->isBlank()) || tilePtr->getLetter() == letter) {
+				rack.erase(tilePtr);
 				found = true;
 				break;
 			}
