@@ -21,10 +21,10 @@ public:
 	ESPlayer(ESDictionary &dict);
 	virtual ~ESPlayer();
 
-	virtual void gameStarts(int yourId, const PlayerState &state);
-	virtual void playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState);
+	virtual void gameStarts(int yourId, const PlayerState& state);
+	virtual void playerDecisionMade(int playerId, const Decision& decision, const PlayerState& newState);
 
-	virtual struct PlayerDecision makeDecision(const PlayerState &state);
+	virtual std::shared_ptr<Decision> makeDecision(const PlayerState& state);
 };
 
 #endif /* ESPLAYER_H_ */

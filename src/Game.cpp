@@ -5,25 +5,32 @@
  *      Author: saf
  */
 #include <algorithm>
+
 #include "Game.h"
+#include "GameState.h"
 
-PlayerDecision::PlayerDecision(enum PlayerDecision::Type type, union PlayerDecision::Data data) {
-	this->type = type;
-	this->data = data;
+Game::Game(std::vector<std::unique_ptr<Player>> players)
+		: players(std::move(players)) {
 }
 
-PlayerDecision::PlayerDecision(Move *move)
-		: type(PlayerDecision::MOVE) {
-	this->data.move = move;
+Game::Game(Game&& other)
+		: players(std::move(other.players)),
+		  currentState(std::move(other.currentState)),
+		  stateHistory(std::move(other.stateHistory)),
+		  decisionHistory(std::move(other.decisionHistory)) {
 }
 
-Game::Game(std::vector<Player *> &players)
-		: players(players) {
+Game& Game::operator=(Game&& other) {
+	std::swap(players, other.players);
+	std::swap(currentState, other.currentState);
+	std::swap(stateHistory, other.stateHistory);
+	std::swap(decisionHistory, other.decisionHistory);
+	return *this;
 }
 
 void Game::initializeState() {
 	Board board = getInitialBoard();
-	std::set<Tile *> bag = getInitialBag();
+	Bag bag = getInitialBag();
 	currentState.reset(new GameState(*this, board, bag));
 }
 
@@ -37,22 +44,22 @@ int Game::getPlayerCount() const {
 
 void Game::oneTurn() {
 	int turn = currentState->getTurn();
-	Player *currentPlayer = players[turn];
+	Player& currentPlayer = *players[turn];
 	PlayerState playerState(currentState, turn);
 
-	struct PlayerDecision decision = currentPlayer->makeDecision(playerState);
+	std::shared_ptr<Decision> decision = currentPlayer.makeDecision(playerState);
 	applyDecision(decision);
 
 	for (size_t i = 0; i < players.size(); i++) {
-		players[i]->playerDecisionMade(turn, decision, PlayerState(currentState, i));
+		players[i]->playerDecisionMade(turn, *decision, PlayerState(currentState, i));
 	}
 }
 
-void Game::applyDecision(PlayerDecision &decision) {
-	auto newState = currentState->stateAfterDecision(decision);
+void Game::applyDecision(const std::shared_ptr<Decision>& decision) {
+	auto newState = currentState->stateAfterDecision(*decision);
 	newState->advanceTurn();
 
-	decisionHistory.push_back(decision);
+	decisionHistory.emplace_back(decision);
 	stateHistory.emplace_back(std::move(currentState));
 
 	currentState = std::move(newState);

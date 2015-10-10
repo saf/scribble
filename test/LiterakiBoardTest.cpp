@@ -1,5 +1,6 @@
-#include "LiterakiGame.h"
+#include "GameState.h"
 #include "IdlePlayer.h"
+#include "LiterakiGame.h"
 #include "LiterakiBoardPrinter.h"
 
 #include <iostream>
@@ -8,12 +9,9 @@
 int main(int argc, const char **argv) {
 	IdlePlayer p;
 	LiterakiBoardPrinter printer;
-	std::vector<Player *> players;
 
 	setlocale(LC_ALL, "");
 	std::locale locale("");
-
-	players.push_back(&p);
 
 	std::wifstream fs;
 	std::cerr << "Opening " << argv[1] << std::endl;

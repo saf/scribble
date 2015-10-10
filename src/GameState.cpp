@@ -5,10 +5,13 @@
  *      Author: saf
  */
 
-#include <algorithm>
 #include "GameState.h"
 
-GameState::GameState(Game& game, Board& board, std::set<Tile *>& bag)
+#include <algorithm>
+
+#include "Decision.h"
+
+GameState::GameState(Game& game, Board& board, Bag& bag)
 		: game(game),
 		  turn(0),
 		  board(board),
@@ -27,61 +30,68 @@ GameState::GameState(const GameState& other)
 }
 
 void GameState::repopulateRack(int playerId) {
-	std::set<Tile *>& rack = racks[playerId];
+	Rack& rack = racks[playerId];
 	int count = game.getRackSize() - rack.size();
-	std::vector<Tile *> tiles;
+	Tileset tiles;
 
 	if (count > 0) {
-		std::vector<Tile *> shuffledBag;
-		for (std::set<Tile *>::iterator it = bag.begin(); it != bag.end(); it++) {
-			shuffledBag.push_back(*it);
+		std::vector<std::shared_ptr<Tile>> shuffledBag;
+		for (const std::shared_ptr<Tile>& tilePtr : bag) {
+			shuffledBag.push_back(tilePtr);
 		}
 		random_shuffle(shuffledBag.begin(), shuffledBag.end());
 
 		while (count) {
-			Tile *tile = shuffledBag.back();
-			tiles.push_back(tile);
+			auto& tilePtr = shuffledBag.back();
+			tiles.insert(tilePtr);
 			shuffledBag.pop_back();
 		}
 	}
 	repopulateRack(playerId, tiles);
 }
 
-void GameState::repopulateRack(int playerId, const std::vector<Tile *>& tiles) {
-	for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
-		bag.erase(*it);
-		racks[playerId].insert(*it);
+void GameState::repopulateRack(int playerId, const Tileset& tiles) {
+	for (const auto& tilePtr : tiles) {
+		bag.erase(tilePtr);
+		racks[playerId].insert(tilePtr);
 	}
 }
 
-std::shared_ptr<GameState> GameState::stateAfterDecision(const PlayerDecision &decision) const {
+std::shared_ptr<GameState> GameState::stateAfterDecision(const Decision &decision) const {
 	std::shared_ptr<GameState> newState(new GameState(*this));
+	decision.applyToState(*newState);
+	return newState;
+}
 
-	switch (decision.type) {
-		case PlayerDecision::MOVE: {
-			Move *move = decision.data.move;
-			int score = this->board.getMoveScore(*move);
-			newState->scores[turn] += score;
-			for (std::vector<Tile *>::const_iterator it = move->getTiles().begin(); it != move->getTiles().end(); it++) {
-				newState->racks[turn].erase(*it);
+void GameState::applyMoveDecision(const MoveDecision& decision) {
+	const Move& move = decision.getMove();
+	int score = board.getMoveScore(move);
+	scores[turn] += score;
+
+	Rack& rack = racks[turn];
+
+	for (Tile* tile : move.getTiles()) {
+		//TODO optimize this after Move has shared-pointers too.
+		auto it = rack.begin();
+		while (it != rack.end()) {
+			if (it->get() == tile) {
+				it = rack.erase(it);
+			} else {
+				it++;
 			}
-			newState->board.applyMove(*decision.data.move);
-			break;
-		}
-		case PlayerDecision::EXCHANGE: {
-			const std::vector<Tile *> &tiles = *decision.data.exchangedTiles;
-			for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
-				newState->racks[turn].erase(*it);
-				newState->hand.push_back(*it);
-			}
-			break;
-		}
-		case PlayerDecision::PASS: {
-			break;
 		}
 	}
+	board.applyMove(move);
+}
 
-	return newState;
+void GameState::applyExchangeDecision(const TileExchangeDecision& decision) {
+	for (const auto& tile : decision.getExchangedTiles()) {
+		racks[turn].erase(tile);
+		hand.insert(tile);
+	}
+}
+
+void GameState::applyPassDecision(const PassDecision& decision) {
 }
 
 int GameState::getTurn() const {
@@ -98,19 +108,19 @@ void GameState::returnHandToBag() {
 	hand.clear();
 }
 
-std::set<Tile *>& GameState::getBag() {
+Bag& GameState::getBag() {
 	return bag;
 }
 
-const std::set<Tile *>& GameState::getBag() const {
+const Bag& GameState::getBag() const {
 	return bag;
 }
 
-std::vector<std::set<Tile *> >& GameState::getRacks() {
+std::vector<Rack>& GameState::getRacks() {
 	return racks;
 }
 
-const std::vector<std::set<Tile *> >& GameState::getRacks() const {
+const std::vector<Rack>& GameState::getRacks() const {
 	return racks;
 }
 
@@ -138,12 +148,9 @@ bool GameState::isFinal() const {
 	if (!bag.empty()) {
 		return false;
 	} else {
-		for (std::vector<std::set<Tile *> >::const_iterator it = racks.begin(); it != racks.end(); it++) {
-			if (it->empty()) {
-				return true;
-			}
-		}
-		return false;
+		return std::any_of(racks.begin(), racks.end(), [](const Rack& rack) {
+			return rack.empty();
+		});
 	}
 }
 
@@ -156,7 +163,7 @@ const Board& PlayerState::getBoard() const {
 	return state_->getBoard();
 }
 
-const std::set<Tile *>& PlayerState::getRack() const {
+const Rack& PlayerState::getRack() const {
 	return state_->getRacks().at(playerId_);
 }
 
@@ -168,7 +175,7 @@ int PlayerState::getPlayerCount() const {
 	return state_->getGame().getPlayerCount();
 }
 
-PlayerState PlayerState::applyDecision(const PlayerDecision &decision) {
+PlayerState PlayerState::applyDecision(const Decision &decision) {
 	auto newState = state_->stateAfterDecision(decision);
 	return PlayerState(std::move(newState), playerId_);
 }

@@ -32,9 +32,9 @@ public:
 	Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles);
 	Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles, std::vector<wchar_t>& blankAssignment);
 
-	int getStartRow();
-	int getStartColumn();
-	enum Direction getDirection();
+	int getStartRow() const;
+	int getStartColumn() const;
+	enum Direction getDirection() const;
 
 	std::vector<Tile *>& getTiles();
 	const std::vector<Tile *>& getTiles() const;

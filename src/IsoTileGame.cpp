@@ -7,55 +7,61 @@
 
 #include "IsoTileGame.h"
 
-IsoTileGame::IsoTileGame(std::vector<Player *> &players)
-	: Game(players) {}
+#include "GameState.h"
 
-IsoTileGame::~IsoTileGame() {
-	for (std::vector<Tile *>::iterator it = myTiles.begin(); it != myTiles.end(); it++) {
-		delete *it;
-	}
+IsoTileGame::IsoTileGame(std::vector<std::unique_ptr<Player>> players)
+	: Game(std::move(players)) {}
+
+IsoTileGame::IsoTileGame(IsoTileGame&& other)
+		: Game(std::move(other)) {
 }
 
-std::set<Tile *> IsoTileGame::getInitialBag() {
-	std::set<Tile *> bag;
-	const TileGroup *group = this->getTileGroups();
-	for (int i = 0; i < this->getTileGroupCount(); i++) {
-		for (int j = 0; j < group->multiplicity; j++) {
-			Tile *t;
-			if (group->letter == L'_') {
-				t = new BlankTile();
+IsoTileGame& IsoTileGame::operator=(IsoTileGame&& other) {
+	std::swap(players, other.players);
+	std::swap(currentState, other.currentState);
+	std::swap(stateHistory, other.stateHistory);
+	std::swap(decisionHistory, other.decisionHistory);
+	return *this;
+}
+
+Tileset IsoTileGame::getInitialBag() {
+	Tileset bag;
+	std::vector<TileGroup> tileGroups = getTileGroups();
+	for (const TileGroup& group : tileGroups) {
+		for (int j = 0; j < group.multiplicity; j++) {
+			std::shared_ptr<Tile> t;
+			if (group.letter == L'_') {
+				t.reset(new BlankTile());
 			} else {
-				t = new Tile(group->letter, group->points, group->color);
+				t.reset(new Tile(group.letter, group.points, group.color));
 			}
 			bag.insert(t);
-			myTiles.push_back(t);
 		}
-		group++;
 	}
 	return bag;
 }
 
-std::vector<Tile *> IsoTileGame::findTilesForPlayerRack(const GameState &state, const wchar_t *rackLetters) {
-	const wchar_t *p = rackLetters;
+Tileset IsoTileGame::findTilesForPlayerRack(const GameState& state, const wchar_t *rackLetters) {
 	int turn = state.getTurn();
-	std::set<Tile *> rack = state.getRacks().at(turn);
-	std::set<Tile *> bag = std::set<Tile *>(state.getBag()); /* Create copy of the bag to safely remove found entries. */
-	std::vector<Tile *> tiles;
+	const Rack& rack = state.getRacks().at(turn);
+	Bag bag(state.getBag()); /* Create copy of the bag to safely remove found entries. */
+	Tileset tiles;
 
+	const wchar_t* p = rackLetters;
 	while (*p) {
 		wchar_t letter = *p;
 		bool found = false;
-		for (std::set<Tile *>::iterator it = rack.begin(); it != rack.end(); it++) {
-			if ((*p == L'_' && (*it)->isBlank()) || (*it)->getLetter() == letter) {
+		for (const auto& tilePtr : rack) {
+			if ((*p == L'_' && tilePtr->isBlank()) || tilePtr->getLetter() == letter) {
 				found = true;
 				break;
 			}
 		}
 		if (!found) {
-			for (std::set<Tile *>::iterator it = bag.begin(); it != bag.end(); it++) {
-				if ((*p == L'_' && (*it)->isBlank()) || (*it)->getLetter() == letter) {
-					tiles.push_back(*it);
-					bag.erase(*it);
+			for (const auto& tilePtr : bag) {
+				if ((*p == L'_' && tilePtr->isBlank()) || tilePtr->getLetter() == letter) {
+					tiles.insert(tilePtr);
+					bag.erase(tilePtr);
 					found = true;
 					break;
 				}
@@ -70,13 +76,13 @@ std::vector<Tile *> IsoTileGame::findTilesForPlayerRack(const GameState &state, 
 	return tiles;
 }
 
-std::vector<Tile *> IsoTileGame::findTilesForPlayerMove(const GameState &state, int row, int column, Move::Direction direction, const wchar_t *wordLetters) {
+Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int column, Move::Direction direction, const wchar_t* wordLetters) {
 	int turn = state.getTurn();
-	std::set<Tile *> rack = std::set<Tile *>(state.getRacks().at(turn));
-	std::vector<Tile *> moveTiles;
-	const wchar_t *p = wordLetters;
+	Rack rack = Rack(state.getRacks().at(turn));
+	Tiles moveTiles;
 	bool blankTile;
 
+	const wchar_t *p = wordLetters;
 	while (*p) {
 		wchar_t letter = *p;
 
@@ -85,17 +91,17 @@ std::vector<Tile *> IsoTileGame::findTilesForPlayerMove(const GameState &state, 
 		} else if (*p != L']') {
 			bool found = false;
 			if (state.getBoard().getTile(row, column) == NULL) {
-				for (std::set<Tile *>::iterator it = rack.begin(); it != rack.end(); it++) {
-					if (blankTile && (*it)->isBlank()) {
-						BlankTile *blank = static_cast<BlankTile *>(*it);
-						blank->fillLetter(letter);
-						moveTiles.push_back(blank);
-						rack.erase(blank);
+				for (const auto& tilePtr : rack) {
+					if (blankTile && tilePtr->isBlank()) {
+						BlankTile *blank = static_cast<BlankTile *>(tilePtr.get());
+						blank->fillLetter(letter);  //TODO do not store blank assignment in the tile!
+						moveTiles.push_back(tilePtr);
+						rack.erase(tilePtr);
 						found = true;
 						break;
-					} else if ((*it)->getLetter() == letter) {
-						moveTiles.push_back(*it);
-						rack.erase(*it);
+					} else if (tilePtr->getLetter() == letter) {
+						moveTiles.push_back(tilePtr);
+						rack.erase(tilePtr);
 						found = true;
 						break;
 					}

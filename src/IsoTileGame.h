@@ -22,22 +22,23 @@ public:
 		int points;
 		int color;
 	};
-private:
-	/* Preserve pointers to tiles allocated by us so that they can be freed
-	 * when we are destroyed. */
-	std::vector<Tile *> myTiles;
 protected:
 
-	IsoTileGame(std::vector<Player *> &players);
-	virtual ~IsoTileGame();
+	IsoTileGame(std::vector<std::unique_ptr<Player>> players);
+	virtual ~IsoTileGame() {};
 
-	virtual const IsoTileGame::TileGroup *getTileGroups() = 0;
-	virtual int getTileGroupCount() = 0;
+	IsoTileGame(const IsoTileGame&) = delete;
+	IsoTileGame(IsoTileGame&& other);
 
-	std::set<Tile *> getInitialBag();
+	IsoTileGame& operator=(const IsoTileGame&) = delete;
+	IsoTileGame& operator=(IsoTileGame&& other);
 
-	static std::vector<Tile *> findTilesForPlayerRack(const GameState &state, const wchar_t *rackLetters);
-	static std::vector<Tile *> findTilesForPlayerMove(const GameState &state, int row, int column, Move::Direction direction, const wchar_t *wordLetters);
+	virtual std::vector<TileGroup> getTileGroups() = 0;
+
+	Tileset getInitialBag();
+
+	static Tileset findTilesForPlayerRack(const GameState& state, const wchar_t* rackLetters);
+	static Tiles findTilesForPlayerMove(const GameState& state, int row, int column, Move::Direction direction, const wchar_t* wordLetters);
 };
 
 #endif /* ISOTILEGAME_H_ */

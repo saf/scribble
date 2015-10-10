@@ -16,15 +16,15 @@ Move::Move(int startRow, int startColumn, enum Direction direction, std::vector<
 Move::Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles, std::vector<wchar_t>& blankAssignment)
 		: startRow(startRow), startColumn(startColumn), direction(direction), tiles(tiles), blankAssignment(blankAssignment) {}
 
-int Move::getStartRow() {
+int Move::getStartRow() const {
 	return this->startRow;
 }
 
-int Move::getStartColumn() {
+int Move::getStartColumn() const {
 	return this->startColumn;
 }
 
-enum Move::Direction Move::getDirection() {
+enum Move::Direction Move::getDirection() const {
 	return this->direction;
 }
 

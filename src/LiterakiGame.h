@@ -14,25 +14,27 @@ class LiterakiGame : public IsoTileGame {
 
 public:
 	enum Colors { YELLOW, GREEN, BLUE, RED };
-private:
-	static const struct TileGroup *tileGroups;
-	static const int tileGroupCount;
-	static const int RACK_SIZE;
 
-	/* Keep fields allocated by us so that we can delete them when we are destroyed. */
-	std::vector<Field *> myFields;
-protected:
-	const struct TileGroup *getTileGroups();
-	int getTileGroupCount();
+	LiterakiGame(std::vector<std::unique_ptr<Player>> players);
+	virtual ~LiterakiGame() {};
 
-	Board getInitialBoard();
-public:
-	LiterakiGame(std::vector<Player *> players);
-	virtual ~LiterakiGame();
+	LiterakiGame(const LiterakiGame&) = delete;
+	LiterakiGame(LiterakiGame&& other);
+
+	LiterakiGame& operator=(const LiterakiGame&) = delete;
+	LiterakiGame& operator=(LiterakiGame&& other);
 
 	int getRackSize() const;
 
 	static LiterakiGame readFromStream(std::wistream &s);
+
+protected:
+	std::vector<TileGroup> getTileGroups();
+
+	Board getInitialBoard();
+
+private:
+	static const int RACK_SIZE;
 };
 
 #endif /* LITERAKI_H_ */

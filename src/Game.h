@@ -8,37 +8,37 @@
 #ifndef GAME_H_
 #define GAME_H_
 
+#include <deque>
+#include <list>
 #include <memory>
 #include <set>
 #include <vector>
 
-#include "Move.h"
 #include "Board.h"
-#include "GameState.h"
+#include "Move.h"
+#include "Player.h"
 
-class Player;
+class Decision;
+
 class GameState;
 class PlayerState;
 
-struct PlayerDecision {
-public:
-	enum Type { MOVE, EXCHANGE, PASS };
-	union Data {
-		Move *move;                          /* for MOVE decisions */
-		std::vector<Tile *> *exchangedTiles; /* for EXCHANGE decisions */
-	};
-
-	Type type;
-	Data data;
-
-	PlayerDecision(enum Type type, union Data data);
-	PlayerDecision(Move *move);
-};
+using Players = std::vector<std::unique_ptr<Player>>;
+using Tiles = std::vector<std::shared_ptr<Tile>>;
+using Tileset = std::set<std::shared_ptr<Tile>>;
+using Rack = Tileset;
+using Bag = Tileset;
 
 class Game {
 public:
-	Game(std::vector<Player *> &players);
+	Game(std::vector<std::unique_ptr<Player>> players);
 	virtual ~Game() {};
+
+	Game(const Game&) = delete;
+	Game(Game&&);
+
+	Game& operator=(const Game&) = delete;
+	Game& operator=(Game&&);
 
 	virtual int getRackSize() const = 0;
 	int getPlayerCount() const;
@@ -47,29 +47,20 @@ public:
 
 	const GameState& getCurrentState();
 
-	virtual void applyDecision(PlayerDecision &d);
+	virtual void applyDecision(const std::shared_ptr<Decision>& decision);
 	virtual void oneTurn();
 	virtual void play();
 
 protected:
-	std::vector<Player *> players;
+	std::vector<std::unique_ptr<Player>> players;
 
 	std::shared_ptr<GameState> currentState;
 
-	std::vector<std::shared_ptr<GameState>> stateHistory;
-	std::vector<PlayerDecision> decisionHistory;
+	std::deque<std::shared_ptr<GameState>> stateHistory;
+	std::deque<std::shared_ptr<Decision>> decisionHistory;
+
 	virtual Board getInitialBoard() = 0;
-	virtual std::set<Tile *> getInitialBag() = 0;
-};
-
-class Player {
-public:
-	virtual ~Player();
-
-	virtual void gameStarts(int yourId, const PlayerState &state) = 0;
-	virtual void playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState) = 0;
-
-	virtual struct PlayerDecision makeDecision(const PlayerState &state) = 0;
+	virtual Bag getInitialBag() = 0;
 };
 
 #endif /* GAME_H_ */

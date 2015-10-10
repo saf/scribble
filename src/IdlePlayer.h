@@ -13,12 +13,11 @@
 class IdlePlayer : public Player {
 public:
 	IdlePlayer();
-	virtual ~IdlePlayer();
 
-	void gameStarts(int yourId, const PlayerState &state);
-	void playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState);
+	void gameStarts(int yourId, const PlayerState &state) override;
+	void playerDecisionMade(int playerId, const Decision &decision, const PlayerState &newState) override;
 
-	struct PlayerDecision makeDecision(const PlayerState &state);
+	struct std::shared_ptr<Decision> makeDecision(const PlayerState &state) override;
 };
 
 #endif /* IDLEPLAYER_H_ */

@@ -27,7 +27,7 @@ public:
 
 class PlainField : public Field {
 public:
-	void applyScore(Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints();
 	}
 	void accept(FieldVisitor &v) const {
@@ -42,7 +42,7 @@ public:
 	MultiplicativeLetterBonusField(int factor) {
 		this->factor = factor;
 	}
-	void applyScore(Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints() * (newTile ? factor : 1);
 	}
 	void accept(FieldVisitor &v) const {
@@ -57,7 +57,7 @@ public:
 	MultiplicativeWordBonusField(int factor) {
 		this->factor = factor;
 	}
-	void applyScore(Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) {
 		score += tile.getPoints();
 	}
 	void changeWordScore(bool newTile, int &score) {
@@ -82,7 +82,7 @@ public:
 		this->factor = factor;
 		this->color = color;
 	}
-	void applyScore(Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) {
 		if (newTile && tile.getColor() == this->color) {
 			score += this->factor * tile.getPoints();
 		} else {

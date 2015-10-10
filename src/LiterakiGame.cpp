@@ -10,21 +10,31 @@
 #include <cstring>
 #include <assert.h>
 
-#include "LiterakiGame.h"
-#include "IdlePlayer.h"
+#include "Decision.h"
 #include "Fields.h"
+#include "GameState.h"
+#include "IdlePlayer.h"
+#include "LiterakiGame.h"
 #include "LiterakiBoardPrinter.h"
 
-LiterakiGame::LiterakiGame(std::vector<Player *> players)
-	: IsoTileGame(players) {}
+LiterakiGame::LiterakiGame(std::vector<std::unique_ptr<Player>> players)
+	: IsoTileGame(std::move(players)) {}
 
-LiterakiGame::~LiterakiGame() {
-	for (std::vector<Field *>::iterator it = myFields.begin(); it != myFields.end(); it++) {
-		delete *it;
-	}
+LiterakiGame::LiterakiGame(LiterakiGame&& other) : IsoTileGame(std::move(other)) {
 }
 
-static const struct IsoTileGame::TileGroup Literaki_tileGroups[] = {
+LiterakiGame& LiterakiGame::operator=(LiterakiGame&& other) {
+	std::swap(players, other.players);
+	std::swap(currentState, other.currentState);
+	std::swap(stateHistory, other.stateHistory);
+	std::swap(decisionHistory, other.decisionHistory);
+	return *this;
+}
+
+const int LiterakiGame::RACK_SIZE = 7;
+
+std::vector<IsoTileGame::TileGroup> LiterakiGame::getTileGroups() {
+	return std::vector<TileGroup>{
 		{ 9, L'a', 1, LiterakiGame::YELLOW },
 		{ 1, L'ą', 5, LiterakiGame::RED },
 		{ 2, L'b', 3, LiterakiGame::BLUE },
@@ -58,18 +68,7 @@ static const struct IsoTileGame::TileGroup Literaki_tileGroups[] = {
 		{ 1, L'ź', 5, LiterakiGame::RED },
 		{ 1, L'ż', 5, LiterakiGame::RED },
 		{ 2, L'_' },
-};
-const struct IsoTileGame::TileGroup *LiterakiGame::tileGroups = &Literaki_tileGroups[0];
-const int LiterakiGame::tileGroupCount = sizeof(Literaki_tileGroups) / sizeof(IsoTileGame::TileGroup);
-
-const int LiterakiGame::RACK_SIZE = 7;
-
-const IsoTileGame::TileGroup *LiterakiGame::getTileGroups() {
-	return tileGroups;
-}
-
-int LiterakiGame::getTileGroupCount() {
-	return tileGroupCount;
+	};
 }
 
 Board LiterakiGame::getInitialBoard() {
@@ -105,7 +104,6 @@ Board LiterakiGame::getInitialBoard() {
 			}
 
 			b.setField(r, c, f);
-			myFields.push_back(f);
 		}
 	}
 
@@ -117,12 +115,10 @@ int LiterakiGame::getRackSize() const {
 }
 
 LiterakiGame LiterakiGame::readFromStream(std::wistream &s) {
-	IdlePlayer player1;
-	IdlePlayer player2;
-	std::vector<Player *> players;
-	players.push_back(&player1);
-	players.push_back(&player2);
-	LiterakiGame game(players);
+	Players players;
+	players.emplace_back(new IdlePlayer());
+	players.emplace_back(new IdlePlayer());
+	LiterakiGame game(std::move(players));
 	game.initializeState();
 
 	int turn = 0;
@@ -158,28 +154,29 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &s) {
 			 * There is a colon in the 'rack' string, so we need to get rid of that. */
 			rack[wcslen(rack) - 1] = L'\0';
 
-			PlayerDecision::Data decisionData;
 			int col = column[0] - 'a';
 			wchar_t *mainWordEnd = wcschr(words, L'/');
 			if (mainWordEnd != NULL) {
 				*mainWordEnd = L'\0';
 			}
-			std::vector<Tile *> missingRackTiles = IsoTileGame::findTilesForPlayerRack(game.getCurrentState(), rack);
+			Tileset missingRackTiles = IsoTileGame::findTilesForPlayerRack(game.getCurrentState(), rack);
 			if (game.stateHistory.size() > 0) {
 				game.stateHistory.back()->repopulateRack(turn, missingRackTiles);
 			}
 			game.currentState->repopulateRack(turn, missingRackTiles);
 
 			Move::Direction dir = direction[0] == '+' ? Move::VERTICAL : Move::HORIZONTAL;
-			std::vector<Tile *> moveTiles = IsoTileGame::findTilesForPlayerMove(game.getCurrentState(), row - 1, col, dir, words);
-			Move *move = new Move(row - 1, col, dir, moveTiles);
-			decisionData.move = move;
-			PlayerDecision decision(PlayerDecision::MOVE, decisionData);
-			assert(points == game.getCurrentState().getBoard().getMoveScore(*move));
+			Tiles moveTiles = IsoTileGame::findTilesForPlayerMove(game.getCurrentState(), row - 1, col, dir, words);
+			std::vector<Tile *> oldStyleTiles;
+			for (const auto& tilePtr: moveTiles) {
+				oldStyleTiles.push_back(tilePtr.get());
+			}
+			std::shared_ptr<MoveDecision> decision = std::shared_ptr<MoveDecision>(new MoveDecision(Move(row - 1, col, dir, oldStyleTiles)));
+
+			assert(points == game.getCurrentState().getBoard().getMoveScore(decision->getMove()));
 			game.applyDecision(decision);
 		} else {
-			PlayerDecision decision(PlayerDecision::PASS, PlayerDecision::Data());
-			game.applyDecision(decision);
+			game.applyDecision(std::shared_ptr<Decision>(new PassDecision()));
 		}
 
 		if (turn == 1) {

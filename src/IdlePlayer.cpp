@@ -7,17 +7,14 @@
 
 #include "IdlePlayer.h"
 
-IdlePlayer::IdlePlayer() {
-	// TODO Auto-generated constructor stub
-}
+#include "Decision.h"
 
-IdlePlayer::~IdlePlayer() {
-	// TODO Auto-generated destructor stub
+IdlePlayer::IdlePlayer() {
 }
 
 void IdlePlayer::gameStarts(int yourId, const PlayerState &state) {}
-void IdlePlayer::playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState) {}
+void IdlePlayer::playerDecisionMade(int playerId, const Decision &decision, const PlayerState &newState) {}
 
-struct PlayerDecision IdlePlayer::makeDecision(const PlayerState &state) {
-	return PlayerDecision(PlayerDecision::PASS, PlayerDecision::Data());
+struct std::shared_ptr<Decision> IdlePlayer::makeDecision(const PlayerState &state) {
+	return std::shared_ptr<Decision>(new PassDecision());
 }

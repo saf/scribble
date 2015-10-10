@@ -7,17 +7,21 @@
 
 #include "ESPlayer.h"
 
+#include <algorithm>
 #include <map>
+
+#include "Decision.h"
+#include "GameState.h"
 
 ESPlayer::ESPlayer(ESDictionary& dict) : dictionary(dict) {}
 
 ESPlayer::~ESPlayer() {}
 
-void ESPlayer::gameStarts(int yourId, const PlayerState &state) {}
+void ESPlayer::gameStarts(int yourId, const PlayerState& state) {}
 
-void ESPlayer::playerDecisionMade(int playerId, const PlayerDecision &decision, const PlayerState &newState) {}
+void ESPlayer::playerDecisionMade(int playerId, const Decision& decision, const PlayerState& newState) {}
 
-static const ESBoardInfo getBoardInfo(const Board &b, std::vector<std::vector<wchar_t> >& rows, std::vector<std::vector<wchar_t> >& cols) {
+static const ESBoardInfo getBoardInfo(const Board& b, std::vector<std::vector<wchar_t> >& rows, std::vector<std::vector<wchar_t> >& cols) {
 	int width = b.getWidth();
 	int height = b.getHeight();
 
@@ -46,12 +50,15 @@ static void moveFoundCallback(Move *move, void *context) {
 	moves->push_back(move);
 }
 
-struct PlayerDecision ESPlayer::makeDecision(const PlayerState &state) {
+std::shared_ptr<Decision> ESPlayer::makeDecision(const PlayerState& state) {
 	const Board& b = state.getBoard();
 	std::vector<ESHook> hooks = getHooks(b);
-	std::set<Tile *> rack = state.getRack();
+	const Rack& rack = state.getRack();
 	std::vector<Tile *> tiles(rack.size());
-	std::copy(rack.begin(), rack.end(), tiles.begin());
+	// TODO change this once Moves get shared pointers to tiles as well.
+	std::transform(rack.begin(), rack.end(), std::back_inserter(tiles), [](const std::shared_ptr<Tile>& tile) {
+		return tile.get();
+	});
 
 	std::vector<std::vector<wchar_t> > rows;
 	std::vector<std::vector<wchar_t> > columns;
@@ -72,9 +79,9 @@ struct PlayerDecision ESPlayer::makeDecision(const PlayerState &state) {
 
 	std::multimap<int, Move *>::reverse_iterator rit = moveScores.rbegin();
 	if (rit != moveScores.rend()) {
-		return PlayerDecision((*rit).second);
+		return std::shared_ptr<Decision>(new MoveDecision(*(rit->second)));
 	} else {
-		return PlayerDecision(PlayerDecision::PASS, PlayerDecision::Data());
+		return std::shared_ptr<Decision>(new PassDecision());
 	}
 }
 
