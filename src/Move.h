@@ -10,37 +10,32 @@
 #ifndef MOVE_H_
 #define MOVE_H_
 
-#include <string>
-#include <vector>
-
+#include "BlankAssignment.h"
+#include "Coordinates.h"
 #include "Tile.h"
 
 class Move {
-
 public:
-	enum Direction { HORIZONTAL, VERTICAL };
+	enum class Direction { HORIZONTAL, VERTICAL };
 
-private:
-	int startRow;
-	int startColumn;
-	enum Direction direction;
-	std::vector<Tile *> tiles;
-	std::vector<wchar_t> blankAssignment;
-
-public:
-	Move(int startRow, int startColumn, enum Direction direction);
-	Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles);
-	Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles, std::vector<wchar_t>& blankAssignment);
+	Move(Coordinates start, Direction direction, Tiles tiles = Tiles(),
+			BlankAssignments blankAssignment = BlankAssignments());
 
 	int getStartRow() const;
 	int getStartColumn() const;
 	enum Direction getDirection() const;
 
-	std::vector<Tile *>& getTiles();
-	const std::vector<Tile *>& getTiles() const;
+	Tiles& getTiles();
+	const Tiles& getTiles() const;
 
-	std::vector<wchar_t>& getBlankAssignment();
-	const std::vector<wchar_t>& getBlankAssignment() const;
+	BlankAssignments& getBlankAssignments();
+	const BlankAssignments& getBlankAssignments() const;
+
+private:
+	Coordinates start_;
+	enum Direction direction_;
+	Tiles tiles_;
+	BlankAssignments blankAssignments_;
 };
 
 

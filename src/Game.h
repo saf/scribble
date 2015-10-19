@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "Board.h"
+#include "Basics.h"
 #include "Move.h"
 #include "Player.h"
 
@@ -22,12 +23,6 @@ class Decision;
 
 class GameState;
 class PlayerState;
-
-using Players = std::vector<std::unique_ptr<Player>>;
-using Tiles = std::vector<std::shared_ptr<Tile>>;
-using Tileset = std::set<std::shared_ptr<Tile>>;
-using Rack = Tileset;
-using Bag = Tileset;
 
 class Game {
 public:

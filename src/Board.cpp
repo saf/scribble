@@ -78,7 +78,7 @@ bool Board::checkMove(const Move &move) const {
 	enum Move::Direction direction = move.getDirection();
 	int startRow = move.getStartRow();
 	int startColumn = move.getStartColumn();
-	const std::vector<Tile *>& tiles = move.getTiles();
+	const Tiles& tiles = move.getTiles();
 	int row = startRow;
 	int col = startColumn;
 
@@ -87,26 +87,26 @@ bool Board::checkMove(const Move &move) const {
 	}
 
 	while (row < this->height && col < this->width && this->tiles[row][col] != NULL) {
-		if (direction == Move::HORIZONTAL) {
+		if (direction == Move::Direction::HORIZONTAL) {
 			col++;
 		} else {
 			row++;
 		}
 	}
 
-	for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
+	for (const std::shared_ptr<Tile>& tile : tiles) {
 		if (row >= this->height || col >= this->width) {
 			return false;
 		}
 
-		if (direction == Move::HORIZONTAL) {
+		if (direction == Move::Direction::HORIZONTAL) {
 			col++;
 		} else {
 			row++;
 		}
 
 		while (row < this->height && col < this->width && this->tiles[row][col] != NULL) {
-			if (direction == Move::HORIZONTAL) {
+			if (direction == Move::Direction::HORIZONTAL) {
 				col++;
 			} else {
 				row++;
@@ -117,17 +117,17 @@ bool Board::checkMove(const Move &move) const {
 	return true;
 }
 
-int Board::getNewWordScore(const std::vector<Tile *> wordTiles, int startRow, int startColumn, enum Move::Direction direction, int tileIndex) const {
+int Board::getNewWordScore(const Tiles& wordTiles, int startRow, int startColumn, enum Move::Direction direction, int tileIndex) const {
 	int score = 0;
 	std::vector<Field *> newTileFields;
 	std::vector<Field *> oldTileFields;
 	bool hasPreceding = false;
 	int row = startRow;
 	int col = startColumn;
-	if (direction == Move::VERTICAL && row - 1 >= 0 && this->tiles[row - 1][col] != NULL) {
+	if (direction == Move::Direction::VERTICAL && row - 1 >= 0 && this->tiles[row - 1][col] != NULL) {
 		hasPreceding = true;
 		row--;
-	} else if (direction == Move::HORIZONTAL && col - 1 >= 0 && this->tiles[row][col - 1] != NULL) {
+	} else if (direction == Move::Direction::HORIZONTAL && col - 1 >= 0 && this->tiles[row][col - 1] != NULL) {
 		hasPreceding = true;
 		col--;
 	}
@@ -142,7 +142,7 @@ int Board::getNewWordScore(const std::vector<Tile *> wordTiles, int startRow, in
 			field->applyScore(*this->tiles[row][col], false, score);
 			oldTileFields.push_back(field);
 
-			if (direction == Move::HORIZONTAL) {
+			if (direction == Move::Direction::HORIZONTAL) {
 				col--;
 			} else {
 				row--;
@@ -156,7 +156,7 @@ int Board::getNewWordScore(const std::vector<Tile *> wordTiles, int startRow, in
 	if (tileIndex == -1) {
 		/* Account for existing tiles before our first tile if startRow/startColumn
 		 * specify the location of the first tile in the whole word. */
-		if (direction == Move::HORIZONTAL) {
+		if (direction == Move::Direction::HORIZONTAL) {
 			while (col < this->width && this->tiles[row][col] != NULL) {
 				Field *field = this->fields[row][col];
 				field->applyScore(*this->tiles[row][col], false, score);
@@ -177,7 +177,7 @@ int Board::getNewWordScore(const std::vector<Tile *> wordTiles, int startRow, in
 			field->applyScore(*tile, true, score);
 			newTileFields.push_back(field);
 
-			if (direction == Move::HORIZONTAL) {
+			if (direction == Move::Direction::HORIZONTAL) {
 				col++;
 				while (col < this->width && this->tiles[row][col] != NULL) {
 					field = this->fields[row][col];
@@ -198,14 +198,14 @@ int Board::getNewWordScore(const std::vector<Tile *> wordTiles, int startRow, in
 	} else {
 		/* Skip our new letter for now. If we find an expansion into a word to which this letter
 		 * contributes, it will be accounted for at the end of this function. */
-		if (direction == Move::HORIZONTAL) {
+		if (direction == Move::Direction::HORIZONTAL) {
 			col++;
 		} else {
 			row++;
 		}
 	}
 
-	if (direction == Move::HORIZONTAL) {
+	if (direction == Move::Direction::HORIZONTAL) {
 		while (col < this->width && this->tiles[row][col] != NULL) {
 			Field *field = this->fields[row][col];
 			field->applyScore(*this->tiles[row][col], false, score);
@@ -244,17 +244,19 @@ int Board::getNewWordScore(const std::vector<Tile *> wordTiles, int startRow, in
 
 int Board::getMoveScore(const Move &move) const {
 	enum Move::Direction direction = move.getDirection();
-	enum Move::Direction orthogonal = direction == Move::HORIZONTAL ? Move::VERTICAL : Move::HORIZONTAL;
+	enum Move::Direction orthogonal = direction == Move::Direction::HORIZONTAL
+			? Move::Direction::VERTICAL
+			: Move::Direction::HORIZONTAL;
 	int startRow = move.getStartRow();
 	int startColumn = move.getStartColumn();
-	const std::vector<Tile *>& tiles = move.getTiles();
+	const Tiles& tiles = move.getTiles();
 	int score = 0;
 	int row = startRow;
 	int col = startColumn;
 
 	score += getNewWordScore(tiles, row, col, direction);
 
-	if (direction == Move::HORIZONTAL) {
+	if (direction == Move::Direction::HORIZONTAL) {
 		while (col < this->width && this->tiles[row][col] != NULL) {
 			col++;
 		}
@@ -267,7 +269,7 @@ int Board::getMoveScore(const Move &move) const {
 	for (size_t i = 0; i < tiles.size(); i++) {
 		score += getNewWordScore(tiles, row, col, orthogonal, i);
 
-		if (direction == Move::HORIZONTAL) {
+		if (direction == Move::Direction::HORIZONTAL) {
 			col++;
 			while (col < this->width && this->tiles[row][col] != NULL) {
 				col++;
@@ -292,24 +294,24 @@ void Board::applyMove(const Move &move) {
 	enum Move::Direction direction = move.getDirection();
 	int row = move.getStartRow();
 	int col = move.getStartColumn();
-	const std::vector<Tile *>& tiles = move.getTiles();
+	const Tiles& tiles = move.getTiles();
 
 	if (!this->checkMove(move)) {
 		throw InvalidMove();
 	}
 
 	while (this->tiles[row][col] != NULL) {
-		if (direction == Move::HORIZONTAL) {
+		if (direction == Move::Direction::HORIZONTAL) {
 			col++;
 		} else {
 			row++;
 		}
 	}
 
-	for (std::vector<Tile *>::const_iterator it = tiles.begin(); it != tiles.end(); it++) {
-		this->putTile(row, col, **it);
+	for (const std::shared_ptr<Tile>& tile : tiles) {
+		this->putTile(row, col, *tile);
 
-		if (direction == Move::HORIZONTAL) {
+		if (direction == Move::Direction::HORIZONTAL) {
 			col++;
 			while (col < this->width && this->tiles[row][col] != NULL) {
 				col++;

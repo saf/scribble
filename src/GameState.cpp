@@ -70,11 +70,11 @@ void GameState::applyMoveDecision(const MoveDecision& decision) {
 
 	Rack& rack = racks[turn];
 
-	for (Tile* tile : move.getTiles()) {
+	for (const std::shared_ptr<Tile>& tile : move.getTiles()) {
 		//TODO optimize this after Move has shared-pointers too.
 		auto it = rack.begin();
 		while (it != rack.end()) {
-			if (it->get() == tile) {
+			if (*it == tile) {
 				it = rack.erase(it);
 			} else {
 				it++;

@@ -41,7 +41,7 @@ private:
 	 *    to the index of the tile in [tiles] where the crossing takes place; [row] and [col]
 	 *    are coordinates of this tile on the board.
 	 */
-	int getNewWordScore(const std::vector<Tile *> tiles, int row, int col, Move::Direction direction, int tileIndex = -1) const;
+	int getNewWordScore(const Tiles& tiles, int row, int col, Move::Direction direction, int tileIndex = -1) const;
 public:
 	class InvalidMove : public std::exception {
 	public:

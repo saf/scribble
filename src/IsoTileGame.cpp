@@ -115,7 +115,7 @@ Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int c
 				}
 			}
 
-			if (direction == Move::HORIZONTAL) {
+			if (direction == Move::Direction::HORIZONTAL) {
 				column++;
 			} else {
 				row++;

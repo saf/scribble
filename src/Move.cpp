@@ -7,39 +7,37 @@
 
 #include "Move.h"
 
-Move::Move(int startRow, int startColumn, enum Direction direction)
-		: startRow(startRow), startColumn(startColumn), direction(direction) {}
-
-Move::Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles)
-		: startRow(startRow), startColumn(startColumn), direction(direction), tiles(tiles) {}
-
-Move::Move(int startRow, int startColumn, enum Direction direction, std::vector<Tile *>& tiles, std::vector<wchar_t>& blankAssignment)
-		: startRow(startRow), startColumn(startColumn), direction(direction), tiles(tiles), blankAssignment(blankAssignment) {}
+Move::Move(Coordinates start, Direction direction, Tiles tiles, BlankAssignments blankAssignments)
+		: start_(std::move(start)),
+		  direction_(direction),
+		  tiles_(std::move(tiles)),
+		  blankAssignments_(std::move(blankAssignments)) {
+}
 
 int Move::getStartRow() const {
-	return this->startRow;
+	return this->start_.row;
 }
 
 int Move::getStartColumn() const {
-	return this->startColumn;
+	return this->start_.column;
 }
 
 enum Move::Direction Move::getDirection() const {
-	return this->direction;
+	return this->direction_;
 }
 
-std::vector<Tile *>& Move::getTiles() {
-	return tiles;
+Tiles& Move::getTiles() {
+	return tiles_;
 }
 
-const std::vector<Tile *>& Move::getTiles() const {
-	return tiles;
+const Tiles& Move::getTiles() const {
+	return tiles_;
 }
 
-std::vector<wchar_t>& Move::getBlankAssignment() {
-	return blankAssignment;
+BlankAssignments& Move::getBlankAssignments() {
+	return blankAssignments_;
 }
 
-const std::vector<wchar_t>& Move::getBlankAssignment() const {
-	return blankAssignment;
+const BlankAssignments& Move::getBlankAssignments() const {
+	return blankAssignments_;
 }

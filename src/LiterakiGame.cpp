@@ -171,13 +171,15 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 			}
 			game.currentState->repopulateRack(turn, missingRackTiles);
 
-			Move::Direction dir = direction == L'+' ? Move::VERTICAL : Move::HORIZONTAL;
-			Tiles moveTiles = IsoTileGame::findTilesForPlayerMove(game.getCurrentState(), row - 1, col, dir, mainWord.c_str());
-			std::vector<Tile *> oldStyleTiles;
-			for (const auto& tilePtr: moveTiles) {
-				oldStyleTiles.push_back(tilePtr.get());
-			}
-			std::shared_ptr<MoveDecision> decision = std::shared_ptr<MoveDecision>(new MoveDecision(Move(row - 1, col, dir, oldStyleTiles)));
+			Move::Direction dir = direction == L'+'
+					? Move::Direction::VERTICAL
+					: Move::Direction::HORIZONTAL;
+			Tiles moveTiles = IsoTileGame::findTilesForPlayerMove(
+					game.getCurrentState(), row - 1, col, dir, mainWord.c_str()
+			);
+			std::shared_ptr<MoveDecision> decision = std::shared_ptr<MoveDecision>(
+					new MoveDecision(Move(Coordinates(row - 1, col), dir, moveTiles))
+			);
 
 			assert(points == game.getCurrentState().getBoard().getMoveScore(decision->getMove()));
 			game.applyDecision(decision);
