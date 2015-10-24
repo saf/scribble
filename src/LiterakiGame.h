@@ -24,17 +24,21 @@ public:
 	LiterakiGame& operator=(const LiterakiGame&) = delete;
 	LiterakiGame& operator=(LiterakiGame&& other);
 
-	int getRackSize() const;
+	int getRackSize() const override;
+
+	int score(const TilePlacement& tiles, const Move& move) const override;
 
 	static LiterakiGame readFromStream(std::wistream &s);
-
 protected:
-	std::vector<TileGroup> getTileGroups();
+	std::vector<TileGroup> getTileGroups() override;
 
-	Board getInitialBoard();
+	Board getInitialBoard() override;
+
 
 private:
 	static const int RACK_SIZE;
+
+
 };
 
 #endif /* LITERAKI_H_ */

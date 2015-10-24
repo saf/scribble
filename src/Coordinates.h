@@ -3,14 +3,25 @@
 
 #include <cstdint>
 
+#include "Direction.h"
+
 struct Coordinates {
-	Coordinates(uint32_t row, uint32_t column)
+	Coordinates(uint row, uint column)
 			: row(row),
 			  column(column) {
 	}
 
-	uint32_t row;
-	uint32_t column;
+	/// At which position on a line with the specific direction are we?
+	uint offsetOnLine(Direction direction) {
+		if (direction == Direction::HORIZONTAL) {
+			return column;
+		} else {
+			return row;
+		}
+	}
+
+	uint row;
+	uint column;
 };
 
 #endif

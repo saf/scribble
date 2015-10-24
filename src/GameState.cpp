@@ -14,7 +14,7 @@
 GameState::GameState(Game& game, Board& board, Bag& bag)
 		: game(game),
 		  turn(0),
-		  board(board),
+		  tiles(board),
 		  bag(bag),
 		  racks(game.getPlayerCount()),
 		  scores(game.getPlayerCount(), 0) {
@@ -23,7 +23,7 @@ GameState::GameState(Game& game, Board& board, Bag& bag)
 GameState::GameState(const GameState& other)
 		: game(other.game),
 		  turn(other.turn),
-		  board(other.board),
+		  tiles(other.tiles),
 		  bag(other.bag),
 		  racks(other.racks),
 		  scores(other.scores) {
@@ -65,13 +65,12 @@ std::shared_ptr<GameState> GameState::stateAfterDecision(const Decision &decisio
 
 void GameState::applyMoveDecision(const MoveDecision& decision) {
 	const Move& move = decision.getMove();
-	int score = board.getMoveScore(move);
+	int score = game.score(tiles, move);
 	scores[turn] += score;
 
 	Rack& rack = racks[turn];
 
 	for (const std::shared_ptr<Tile>& tile : move.getTiles()) {
-		//TODO optimize this after Move has shared-pointers too.
 		auto it = rack.begin();
 		while (it != rack.end()) {
 			if (*it == tile) {
@@ -81,7 +80,8 @@ void GameState::applyMoveDecision(const MoveDecision& decision) {
 			}
 		}
 	}
-	board.applyMove(move);
+
+	tiles.applyMove(move);
 }
 
 void GameState::applyExchangeDecision(const TileExchangeDecision& decision) {
@@ -116,28 +116,16 @@ const Bag& GameState::getBag() const {
 	return bag;
 }
 
-std::vector<Rack>& GameState::getRacks() {
-	return racks;
-}
-
 const std::vector<Rack>& GameState::getRacks() const {
 	return racks;
 }
 
-Board& GameState::getBoard() {
-	return board;
-}
-
-const Board& GameState::getBoard() const {
-	return board;
-}
-
-std::vector<int>& GameState::getScores() {
-	return scores;
-}
-
 const std::vector<int>& GameState::getScores() const {
 	return scores;
+}
+
+const TilePlacement& GameState::getTiles() const {
+	return tiles;
 }
 
 const Game& GameState::getGame() const {
@@ -160,7 +148,11 @@ PlayerState::PlayerState(const std::shared_ptr<GameState> state, int playerId)
 }
 
 const Board& PlayerState::getBoard() const {
-	return state_->getBoard();
+	return state_->getGame().getBoard();
+}
+
+const TilePlacement& PlayerState::getTiles() const {
+	return state_->getTiles();
 }
 
 const Rack& PlayerState::getRack() const {

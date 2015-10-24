@@ -24,9 +24,9 @@ public:
 	 *    This is realized by modifying the 'score' reference while this method is called.
 	 *  TODO doc
 	 */
-	virtual void applyScore(const Tile &tile, bool newTile, int &score) = 0;
+	virtual void applyScore(const Tile &tile, bool newTile, int &score) const = 0;
 
-	virtual void changeWordScore(bool newTile, int &score) {};
+	virtual void changeWordScore(bool newTile, int &score) const {};
 
 	virtual void accept(FieldVisitor &v) const = 0;
 };

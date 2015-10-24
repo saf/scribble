@@ -7,7 +7,7 @@ TEST_OBJECTS=$(patsubst %.cpp,%.o,$(TEST_SOURCES))
 CFLAGS=-g -O0 -I src -std=c++0x
 LDFLAGS=-lboost_unit_test_framework -std=c++0x
 
-all: test bin/board-printer-test bin/scribble
+all: bin/board-printer-test bin/scribble bin/unit-test
 
 test: bin/unit-test
 	$<

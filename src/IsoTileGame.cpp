@@ -80,7 +80,7 @@ Tileset IsoTileGame::findTilesForPlayerRack(const GameState& state, const wchar_
 	return tiles;
 }
 
-Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int column, Move::Direction direction, const wchar_t* wordLetters) {
+Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int column, Direction direction, const wchar_t* wordLetters) {
 	int turn = state.getTurn();
 	Rack rack = Rack(state.getRacks().at(turn));
 	Tiles moveTiles;
@@ -94,7 +94,7 @@ Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int c
 			blankTile = true;
 		} else if (*p != L']') {
 			bool found = false;
-			if (state.getBoard().getTile(row, column) == NULL) {
+			if (state.getTiles()[row][column] == NULL) {
 				for (const auto& tilePtr : rack) {
 					if (blankTile && tilePtr->isBlank()) {
 						BlankTile *blank = static_cast<BlankTile *>(tilePtr.get());
@@ -115,7 +115,7 @@ Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int c
 				}
 			}
 
-			if (direction == Move::Direction::HORIZONTAL) {
+			if (direction == Direction::HORIZONTAL) {
 				column++;
 			} else {
 				row++;

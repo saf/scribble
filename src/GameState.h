@@ -9,6 +9,7 @@
 #define GAMESTATE_H_
 
 #include "Game.h"
+#include "TilePlacement.h"
 
 class Game;
 class Decision;
@@ -31,14 +32,11 @@ class GameState {
 		Bag& getBag();
 		const Bag& getBag() const;
 
-		std::vector<Rack>& getRacks();
 		const std::vector<Rack>& getRacks() const;
 
-		std::vector<int>& getScores();
 		const std::vector<int>& getScores() const;
 
-		Board& getBoard();
-		const Board& getBoard() const;
+		const TilePlacement& getTiles() const;
 
 		const Game& getGame() const;
 
@@ -56,7 +54,7 @@ class GameState {
 	protected:
 		const Game& game;
 		int turn; /* cycles through 0 ... (playerCount-1) */
-		Board board;
+		TilePlacement tiles;
 		Bag bag;
 		std::vector<Rack> racks;
 		std::vector<int> scores;
@@ -69,7 +67,8 @@ class PlayerState {
 	public:
 		PlayerState(std::shared_ptr<GameState> state, int playerId_);
 
-		const Board &getBoard() const;
+		const Board& getBoard() const;
+		const TilePlacement& getTiles() const;
 		const Rack& getRack() const;
 		const std::vector<int>& getScores() const;
 		int getPlayerCount() const;

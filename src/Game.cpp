@@ -5,6 +5,7 @@
  *      Author: saf
  */
 #include <algorithm>
+#include <assert.h>
 
 #include "Game.h"
 #include "GameState.h"
@@ -36,6 +37,11 @@ void Game::initializeState() {
 
 const GameState& Game::getCurrentState() {
 	return *currentState;
+}
+
+const Board& Game::getBoard() const {
+	assert(board_);
+	return *board_;
 }
 
 int Game::getPlayerCount() const {

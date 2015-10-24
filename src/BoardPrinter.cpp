@@ -12,7 +12,7 @@ BoardPrinter::BoardPrinter() {}
 
 BoardPrinter::~BoardPrinter() {}
 
-std::wstring BoardPrinter::getTileString(const Tile *tile) {
+std::wstring BoardPrinter::getTileString(const std::shared_ptr<Tile>& tile) {
 	std::wstring s;
 	if (tile != NULL) {
 		s.push_back(tile->getLetter());
@@ -22,17 +22,17 @@ std::wstring BoardPrinter::getTileString(const Tile *tile) {
 	return s;
 }
 
-std::wstring BoardPrinter::getFieldString(const Field *field, const Tile *tile) {
+std::wstring BoardPrinter::getFieldString(const Field& field, const std::shared_ptr<Tile>& tile) {
 	return BoardPrinter::getTileString(tile);
 }
 
-void BoardPrinter::printBoard(const Board &b) {
-	int width = b.getWidth();
-	int height = b.getHeight();
+void BoardPrinter::printBoard(const Board& board, const TilePlacement& tiles) {
+	int width = board.getWidth();
+	int height = board.getHeight();
 
 	for (int r = 0; r < height; r++) {
 		for (int c = 0; c < width; c++) {
-			std::wstring fieldString = getFieldString(b.getField(r, c), b.getTile(r, c));
+			std::wstring fieldString = getFieldString(board.getField(r, c), tiles[r][c]);
 			std::wcout << fieldString;
 			if (c == width - 1) {
 				if (r == width - 1) {

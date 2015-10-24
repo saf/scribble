@@ -18,6 +18,7 @@
 #include "Basics.h"
 #include "Move.h"
 #include "Player.h"
+#include "TilePlacement.h"
 
 class Decision;
 
@@ -36,6 +37,9 @@ public:
 	Game& operator=(Game&&);
 
 	virtual int getRackSize() const = 0;
+
+	const Board& getBoard() const;
+
 	int getPlayerCount() const;
 
 	virtual void initializeState();
@@ -46,7 +50,11 @@ public:
 	virtual void oneTurn();
 	virtual void play();
 
+	virtual int score(const TilePlacement& currentTiles, const Move& move) const = 0;
+
 protected:
+	std::unique_ptr<Board> board_;
+
 	std::vector<std::unique_ptr<Player>> players;
 
 	std::shared_ptr<GameState> currentState;

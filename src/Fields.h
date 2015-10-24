@@ -27,10 +27,10 @@ public:
 
 class PlainField : public Field {
 public:
-	void applyScore(const Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) const override {
 		score += tile.getPoints();
 	}
-	void accept(FieldVisitor &v) const {
+	void accept(FieldVisitor &v) const override {
 		v.visit(this);
 	}
 };
@@ -42,10 +42,10 @@ public:
 	MultiplicativeLetterBonusField(int factor) {
 		this->factor = factor;
 	}
-	void applyScore(const Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) const override {
 		score += tile.getPoints() * (newTile ? factor : 1);
 	}
-	void accept(FieldVisitor &v) const {
+	void accept(FieldVisitor &v) const override {
 		v.visit(this);
 	}
 };
@@ -57,10 +57,10 @@ public:
 	MultiplicativeWordBonusField(int factor) {
 		this->factor = factor;
 	}
-	void applyScore(const Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) const override {
 		score += tile.getPoints();
 	}
-	void changeWordScore(bool newTile, int &score) {
+	void changeWordScore(bool newTile, int &score) const override {
 		if (newTile) {
 			score *= this->factor;
 		}
@@ -68,7 +68,7 @@ public:
 	int getFactor() const {
 		return this->factor;
 	}
-	virtual void accept(FieldVisitor &v) const {
+	virtual void accept(FieldVisitor &v) const override {
 		v.visit(this);
 	}
 };
@@ -82,7 +82,7 @@ public:
 		this->factor = factor;
 		this->color = color;
 	}
-	void applyScore(const Tile &tile, bool newTile, int &score) {
+	void applyScore(const Tile &tile, bool newTile, int &score) const override {
 		if (newTile && tile.getColor() == this->color) {
 			score += this->factor * tile.getPoints();
 		} else {
@@ -92,7 +92,7 @@ public:
 	int getColor() const {
 		return this->color;
 	}
-	virtual void accept(FieldVisitor &v) const {
+	virtual void accept(FieldVisitor &v) const override {
 		v.visit(this);
 	}
 };

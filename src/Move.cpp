@@ -14,15 +14,19 @@ Move::Move(Coordinates start, Direction direction, Tiles tiles, BlankAssignments
 		  blankAssignments_(std::move(blankAssignments)) {
 }
 
-int Move::getStartRow() const {
+Coordinates Move::getCoordinates() const {
+	return start_;
+}
+
+uint Move::getStartRow() const {
 	return this->start_.row;
 }
 
-int Move::getStartColumn() const {
+uint Move::getStartColumn() const {
 	return this->start_.column;
 }
 
-enum Move::Direction Move::getDirection() const {
+Direction Move::getDirection() const {
 	return this->direction_;
 }
 

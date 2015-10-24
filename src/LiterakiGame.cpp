@@ -73,42 +73,33 @@ std::vector<IsoTileGame::TileGroup> LiterakiGame::getTileGroups() {
 }
 
 Board LiterakiGame::getInitialBoard() {
-	Board b(15, 15);
-
-	for (int r = 0; r < 15; r++) {
-		for (int c = 0; c < 15; c++) {
-			/* The special fields are organized in city-metric
-			 * circles around the center, so we'll
-			 * build the construction of the board upon that. */
-			Field *f;
-			int distanceFromCenter = std::abs(r - 7) + std::abs(c - 7);
-			if (distanceFromCenter == 0) {
-				f = new ColoredField(3, RED);
-			} else if (distanceFromCenter == 2) {
-				f = new ColoredField(3, BLUE);
-			} else if (distanceFromCenter == 5) {
-				f = new ColoredField(3, YELLOW);
-			} else if (distanceFromCenter == 9) {
-				f = new ColoredField(3, GREEN);
-			} else if (distanceFromCenter == 14) {
-				f = new ColoredField(3, RED);
-			} else if (distanceFromCenter == 7) {
-				if (std::abs(r - 7) <= 1 || std::abs(c - 7) <= 1) {
-					f = new ColoredField(3, RED);
-				} else {
-					f = new MultiplicativeWordBonusField(2);
-				}
-			} else if (distanceFromCenter == 12 && r != 1 && r != 13) {
-				f = new MultiplicativeWordBonusField(3);
+	return Board(15, 15, [](uint r, uint c) {
+		/* The special fields are organized in city-metric
+		 * circles around the center, so we'll
+		 * build the construction of the board upon that. */
+		int distanceFromCenter = std::abs(r - 7) + std::abs(c - 7);
+		if (distanceFromCenter == 0) {
+			return std::unique_ptr<Field>(new ColoredField(3, RED));
+		} else if (distanceFromCenter == 2) {
+			return std::unique_ptr<Field>(new ColoredField(3, BLUE));
+		} else if (distanceFromCenter == 5) {
+			return std::unique_ptr<Field>(new ColoredField(3, YELLOW));
+		} else if (distanceFromCenter == 9) {
+			return std::unique_ptr<Field>(new ColoredField(3, GREEN));
+		} else if (distanceFromCenter == 14) {
+			return std::unique_ptr<Field>(new ColoredField(3, RED));
+		} else if (distanceFromCenter == 7) {
+			if (std::abs(r - 7) <= 1 || std::abs(c - 7) <= 1) {
+				return std::unique_ptr<Field>(new ColoredField(3, RED));
 			} else {
-				f = new PlainField();
+				return std::unique_ptr<Field>(new MultiplicativeWordBonusField(2));
 			}
-
-			b.setField(r, c, f);
+		} else if (distanceFromCenter == 12 && r != 1 && r != 13) {
+			return std::unique_ptr<Field>(new MultiplicativeWordBonusField(3));
+		} else {
+			return std::unique_ptr<Field>(new PlainField());
 		}
-	}
-
-	return b;
+	});
 }
 
 int LiterakiGame::getRackSize() const {
@@ -171,9 +162,7 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 			}
 			game.currentState->repopulateRack(turn, missingRackTiles);
 
-			Move::Direction dir = direction == L'+'
-					? Move::Direction::VERTICAL
-					: Move::Direction::HORIZONTAL;
+			Direction dir = direction == L'+' ? Direction::VERTICAL : Direction::HORIZONTAL;
 			Tiles moveTiles = IsoTileGame::findTilesForPlayerMove(
 					game.getCurrentState(), row - 1, col, dir, mainWord.c_str()
 			);
@@ -181,7 +170,7 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 					new MoveDecision(Move(Coordinates(row - 1, col), dir, moveTiles))
 			);
 
-			assert(points == game.getCurrentState().getBoard().getMoveScore(decision->getMove()));
+			assert(points == game.score(game.currentState->getTiles(), decision->getMove()));
 			game.applyDecision(decision);
 		} else {
 			game.applyDecision(std::shared_ptr<Decision>(new PassDecision()));
@@ -194,4 +183,72 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 	}
 
 	return game;
+}
+
+static int wordScore(const Board& board, const Segment<std::shared_ptr<Tile>>& segment, const Tiles& moveTiles) {
+	uint index = 0;
+	Tiles::const_iterator nextTile = moveTiles.begin();
+
+	int score = 0;
+	std::vector<std::function<void(int&)>> wordScoreModifiers;
+	while (index < segment.length() && (segment[index] != nullptr || nextTile != moveTiles.end())) {
+		const Field& field = board.getField(segment.coordinates(index));
+		if (segment[index] == nullptr) {
+			const std::shared_ptr<Tile>& tilePtr = *nextTile;
+			field.applyScore(*tilePtr, true, score);
+			wordScoreModifiers.emplace_back([&field](int& score) { field.changeWordScore(true, score); });
+			nextTile++;
+		} else {
+			field.applyScore(*segment[index], false, score);
+			wordScoreModifiers.emplace_back([&field](int& score) { field.changeWordScore(false, score); });
+		}
+		index++;
+	}
+
+	for (auto& wordModifier : wordScoreModifiers) {
+		wordModifier(score);
+	}
+
+	return score;
+}
+
+int LiterakiGame::score(const TilePlacement& tiles, const Move& move) const {
+	Coordinates startCoords(move.getCoordinates());
+	Direction direction = move.getDirection();
+
+	const Tiles& moveTiles = move.getTiles();
+	int score = 0;
+	auto line = tiles.lineAt(startCoords, direction);
+
+	// Create a segment which starts at the first tile of the created/expanded word.
+	uint startOffset = static_cast<int>(startCoords.offsetOnLine(direction));
+	int previous = static_cast<int>(startOffset) - 1;
+	while (previous >= 0 && line[previous] != nullptr) {
+		startOffset = previous;
+		previous--;
+	}
+
+	score += wordScore(tiles.getBoard(),
+			Segment<std::shared_ptr<Tile>>(line, startOffset, line.length() - startOffset),
+			moveTiles
+	);
+
+	uint index = startOffset;
+	for (const auto& tile : moveTiles) {
+		while (line[index] != nullptr) {
+			index++;
+		}
+		auto orthogonalSegment = tiles.filledSegmentAround(line.coordinates(index), direction.other());
+		if (orthogonalSegment.length() > 1) {
+			score += wordScore(tiles.getBoard(), orthogonalSegment, Tiles{tile});
+		}
+		index++;
+	}
+
+	// Bonus for placing 7 tiles.
+	if (moveTiles.size() >= 7) {
+		score += 50;
+	}
+
+	return score;
 }

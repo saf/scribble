@@ -35,10 +35,10 @@ protected:
 
 	virtual std::vector<TileGroup> getTileGroups() = 0;
 
-	Tileset getInitialBag();
+	Tileset getInitialBag() override;
 
 	static Tileset findTilesForPlayerRack(const GameState& state, const wchar_t* rackLetters);
-	static Tiles findTilesForPlayerMove(const GameState& state, int row, int column, Move::Direction direction, const wchar_t* wordLetters);
+	static Tiles findTilesForPlayerMove(const GameState& state, int row, int column, Direction direction, const wchar_t* wordLetters);
 };
 
 #endif /* ISOTILEGAME_H_ */
