@@ -7,6 +7,7 @@
 #include "Direction.h"
 
 template<typename T> class Grid;
+template<typename T> class Segment;
 
 template<typename T>
 class Line {
@@ -37,6 +38,14 @@ public:
 		} else {
 			return Coordinates(indexInLine, index_);
 		}
+	}
+
+	Segment<T> suffix(uint offset) {
+		return Segment<T>(*this, offset, length() - offset);
+	}
+
+	Segment<T> segment(uint offset, uint length) {
+		return Segment<T>(*this, offset, length);
 	}
 
 private:
@@ -141,6 +150,14 @@ public:
 
 	const Line<T> lineAt(Coordinates coordinates, Direction direction) const {
 		return const_cast<Grid<T>*>(this)->lineAt(coordinates, direction);
+	}
+
+	Segment<T> segmentFrom(Coordinates coordinates, Direction direction) {
+		return lineAt(coordinates, direction).suffix(coordinates.offsetOnLine(direction));
+	}
+
+	const Segment<T> segmentFrom(Coordinates coordinates, Direction direction) const {
+		return const_cast<Grid<T>*>(this)->segmentFrom(coordinates, direction);
 	}
 protected:
 	using Base = std::vector<std::vector<T>>;

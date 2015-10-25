@@ -2,77 +2,49 @@
 
 void TilePlacement::applyMove(const Move& move) {
 	Direction direction = move.getDirection();
-	int row = move.getStartRow();
-	int col = move.getStartColumn();
+	Coordinates startCoords = move.getCoordinates();
 	const Tiles& tiles = move.getTiles();
+	auto segment = segmentFrom(startCoords, direction);
 
 	if (!this->checkMove(move)) {
 		throw InvalidMove();
 	}
 
-	while (at(row).at(col) != nullptr) {
-		if (direction == Direction::HORIZONTAL) {
-			col++;
-		} else {
-			row++;
+	uint index = 0;
+	for (auto tile : tiles) {
+		while (index < segment.length() && segment[index] != nullptr) {
+			index++;
 		}
-	}
+		if (index < segment.length()) {
+			atCoords(segment.coordinates(index)) = tile;
+			index++;
 
-	for (const std::shared_ptr<Tile>& tile : tiles) {
-		at(row)[col] = tile;
-
-		if (direction == Direction::HORIZONTAL) {
-			col++;
-			while (col < this->columnCount_ && at(row).at(col) != nullptr) {
-				col++;
-			}
 		} else {
-			row++;
-			while (row < this->rowCount_ && at(row).at(col) != nullptr) {
-				row++;
-			}
+			throw InvalidMove();
 		}
 	}
 }
 
 bool TilePlacement::checkMove(const Move& move) const {
 	Direction direction = move.getDirection();
-	int startRow = move.getStartRow();
-	int startColumn = move.getStartColumn();
+	Coordinates startCoords = move.getCoordinates();
 	const Tiles& tiles = move.getTiles();
-	int row = startRow;
-	int col = startColumn;
 
-	if (row < 0 || col < 0 || row >= this->rowCount_ || col >= this->columnCount_) {
+	if (startCoords.row < 0 || startCoords.column < 0
+			|| startCoords.row >= this->rowCount_ || startCoords.column >= this->columnCount_) {
 		return false;
 	}
+	auto segment = segmentFrom(startCoords, direction);
 
-	while (row < this->rowCount_ && col < this->columnCount_ && at(row).at(col) != nullptr) {
-		if (direction == Direction::HORIZONTAL) {
-			col++;
-		} else {
-			row++;
+	uint index = 0;
+	for (auto tile : tiles) {
+		while (index < segment.length() && segment[index] != nullptr) {
+			index++;
 		}
-	}
-
-	for (const std::shared_ptr<Tile>& tile : tiles) {
-		if (row >= this->rowCount_ || col >= this->columnCount_) {
+		if (index >= segment.length()) {
 			return false;
 		}
-
-		if (direction == Direction::HORIZONTAL) {
-			col++;
-		} else {
-			row++;
-		}
-
-		while (row < this->rowCount_ && col < this->columnCount_ && at(row).at(col) != nullptr) {
-			if (direction == Direction::HORIZONTAL) {
-				col++;
-			} else {
-				row++;
-			}
-		}
+		index++;
 	}
 
 	return true;
