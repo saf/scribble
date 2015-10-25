@@ -55,14 +55,14 @@ public:
 protected:
 	std::unique_ptr<Board> board_;
 
-	std::vector<std::unique_ptr<Player>> players;
+	std::vector<std::unique_ptr<Player>> players_;
 
-	std::shared_ptr<GameState> currentState;
+	std::shared_ptr<GameState> currentState_;
 
-	std::deque<std::shared_ptr<GameState>> stateHistory;
-	std::deque<std::shared_ptr<Decision>> decisionHistory;
+	std::deque<std::shared_ptr<GameState>> stateHistory_;
+	std::deque<std::shared_ptr<Decision>> decisionHistory_;
 
-	virtual Board getInitialBoard() = 0;
+	virtual std::unique_ptr<Board> getInitialBoard() = 0;
 	virtual Bag getInitialBag() = 0;
 };
 

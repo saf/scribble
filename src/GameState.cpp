@@ -11,11 +11,11 @@
 
 #include "Decision.h"
 
-GameState::GameState(Game& game, Board& board, Bag& bag)
+GameState::GameState(const Game& game, Bag bag)
 		: game(game),
 		  turn(0),
-		  tiles(board),
-		  bag(bag),
+		  tiles(game.getBoard()),
+		  bag(std::move(bag)),
 		  racks(game.getPlayerCount()),
 		  scores(game.getPlayerCount(), 0) {
 }

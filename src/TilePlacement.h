@@ -34,7 +34,7 @@ public:
 			offset--;
 			length++;
 		}
-		for (uint i = offset + 1; i < line.length() && line[i] != nullptr; i++) {
+		for (uint i = offset + length; i < line.length() && line[i] != nullptr; i++) {
 			length++;
 		}
 		return Segment<std::shared_ptr<Tile>>(line, offset, length);

@@ -25,10 +25,10 @@ LiterakiGame::LiterakiGame(LiterakiGame&& other) : IsoTileGame(std::move(other))
 }
 
 LiterakiGame& LiterakiGame::operator=(LiterakiGame&& other) {
-	std::swap(players, other.players);
-	std::swap(currentState, other.currentState);
-	std::swap(stateHistory, other.stateHistory);
-	std::swap(decisionHistory, other.decisionHistory);
+	std::swap(players_, other.players_);
+	std::swap(currentState_, other.currentState_);
+	std::swap(stateHistory_, other.stateHistory_);
+	std::swap(decisionHistory_, other.decisionHistory_);
 	return *this;
 }
 
@@ -72,12 +72,12 @@ std::vector<IsoTileGame::TileGroup> LiterakiGame::getTileGroups() {
 	};
 }
 
-Board LiterakiGame::getInitialBoard() {
-	return Board(15, 15, [](uint r, uint c) {
+std::unique_ptr<Board> LiterakiGame::getInitialBoard() {
+	return std::unique_ptr<Board>(new Board(15, 15, [](uint r, uint c) {
 		/* The special fields are organized in city-metric
 		 * circles around the center, so we'll
 		 * build the construction of the board upon that. */
-		int distanceFromCenter = std::abs(r - 7) + std::abs(c - 7);
+		int distanceFromCenter = std::abs(static_cast<int>(r) - 7) + std::abs(static_cast<int>(c) - 7);
 		if (distanceFromCenter == 0) {
 			return std::unique_ptr<Field>(new ColoredField(3, RED));
 		} else if (distanceFromCenter == 2) {
@@ -89,7 +89,7 @@ Board LiterakiGame::getInitialBoard() {
 		} else if (distanceFromCenter == 14) {
 			return std::unique_ptr<Field>(new ColoredField(3, RED));
 		} else if (distanceFromCenter == 7) {
-			if (std::abs(r - 7) <= 1 || std::abs(c - 7) <= 1) {
+			if (std::abs(static_cast<int>(r) - 7) <= 1 || std::abs(static_cast<int>(c) - 7) <= 1) {
 				return std::unique_ptr<Field>(new ColoredField(3, RED));
 			} else {
 				return std::unique_ptr<Field>(new MultiplicativeWordBonusField(2));
@@ -99,7 +99,7 @@ Board LiterakiGame::getInitialBoard() {
 		} else {
 			return std::unique_ptr<Field>(new PlainField());
 		}
-	});
+	}));
 }
 
 int LiterakiGame::getRackSize() const {
@@ -157,10 +157,10 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 
 			Tileset missingRackTiles = IsoTileGame::findTilesForPlayerRack(game.getCurrentState(), rack);
 			assert(missingRackTiles.size() + game.getCurrentState().getRacks()[turn].size() == wcslen(rack));
-			if (game.stateHistory.size() > 0) {
-				game.stateHistory.back()->repopulateRack(turn, missingRackTiles);
+			if (game.stateHistory_.size() > 0) {
+				game.stateHistory_.back()->repopulateRack(turn, missingRackTiles);
 			}
-			game.currentState->repopulateRack(turn, missingRackTiles);
+			game.currentState_->repopulateRack(turn, missingRackTiles);
 
 			Direction dir = direction == L'+' ? Direction::VERTICAL : Direction::HORIZONTAL;
 			Tiles moveTiles = IsoTileGame::findTilesForPlayerMove(
@@ -170,7 +170,8 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 					new MoveDecision(Move(Coordinates(row - 1, col), dir, moveTiles))
 			);
 
-			assert(points == game.score(game.currentState->getTiles(), decision->getMove()));
+			int computedPoints = game.score(game.currentState_->getTiles(), decision->getMove());
+			assert(points == computedPoints);
 			game.applyDecision(decision);
 		} else {
 			game.applyDecision(std::shared_ptr<Decision>(new PassDecision()));
@@ -188,7 +189,7 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 static int wordScore(const Board& board, const Segment<std::shared_ptr<Tile>>& segment, const Tiles& moveTiles) {
 	uint index = 0;
 	Tiles::const_iterator nextTile = moveTiles.begin();
-
+	size_t count = moveTiles.size();
 	int score = 0;
 	std::vector<std::function<void(int&)>> wordScoreModifiers;
 	while (index < segment.length() && (segment[index] != nullptr || nextTile != moveTiles.end())) {

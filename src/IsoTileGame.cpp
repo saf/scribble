@@ -17,10 +17,10 @@ IsoTileGame::IsoTileGame(IsoTileGame&& other)
 }
 
 IsoTileGame& IsoTileGame::operator=(IsoTileGame&& other) {
-	std::swap(players, other.players);
-	std::swap(currentState, other.currentState);
-	std::swap(stateHistory, other.stateHistory);
-	std::swap(decisionHistory, other.decisionHistory);
+	std::swap(players_, other.players_);
+	std::swap(currentState_, other.currentState_);
+	std::swap(stateHistory_, other.stateHistory_);
+	std::swap(decisionHistory_, other.decisionHistory_);
 	return *this;
 }
 
@@ -84,7 +84,7 @@ Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int c
 	int turn = state.getTurn();
 	Rack rack = Rack(state.getRacks().at(turn));
 	Tiles moveTiles;
-	bool blankTile;
+	bool blankTile = false;
 
 	const wchar_t *p = wordLetters;
 	while (*p) {

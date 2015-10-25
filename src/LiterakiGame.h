@@ -32,7 +32,7 @@ public:
 protected:
 	std::vector<TileGroup> getTileGroups() override;
 
-	Board getInitialBoard() override;
+	std::unique_ptr<Board> getInitialBoard() override;
 
 
 private:

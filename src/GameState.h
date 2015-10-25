@@ -19,7 +19,7 @@ class PassDecision;
 
 class GameState {
 	public:
-		GameState(Game& game, Board& board, Tileset& bag);
+		GameState(const Game& game, Bag bag);
 		GameState(const GameState &state);
 
 		GameState& operator=(const GameState &other) = delete;
