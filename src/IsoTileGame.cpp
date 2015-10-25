@@ -7,6 +7,8 @@
 
 #include "IsoTileGame.h"
 
+#include <algorithm>
+
 #include "GameState.h"
 
 IsoTileGame::IsoTileGame(std::vector<std::unique_ptr<Player>> players)
@@ -56,7 +58,8 @@ Tileset IsoTileGame::findTilesForPlayerRack(const GameState& state, const wchar_
 		bool found = false;
 		for (const auto& tilePtr : rack) {
 			if ((*p == L'_' && tilePtr->isBlank()) || tilePtr->getLetter() == letter) {
-				rack.erase(tilePtr);
+				auto newEnd = std::remove(rack.begin(), rack.end(), tilePtr);
+				rack.erase(newEnd);
 				found = true;
 				break;
 			}
@@ -95,18 +98,19 @@ Tiles IsoTileGame::findTilesForPlayerMove(const GameState& state, int row, int c
 		} else if (*p != L']') {
 			bool found = false;
 			if (state.getTiles()[row][column] == NULL) {
-				for (const auto& tilePtr : rack) {
+				for (const auto tilePtr : rack) {
 					if (blankTile && tilePtr->isBlank()) {
 						BlankTile *blank = static_cast<BlankTile *>(tilePtr.get());
 						blank->fillLetter(letter);  //TODO do not store blank assignment in the tile!
-						moveTiles.push_back(tilePtr);
-						rack.erase(tilePtr);
 						found = true;
-						break;
 					} else if (tilePtr->getLetter() == letter) {
-						moveTiles.push_back(tilePtr);
-						rack.erase(tilePtr);
 						found = true;
+					}
+
+					if (found) {
+						auto newEnd = std::remove(rack.begin(), rack.end(), tilePtr);
+						rack.erase(newEnd);
+						moveTiles.push_back(tilePtr);
 						break;
 					}
 				}

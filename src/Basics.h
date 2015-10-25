@@ -11,7 +11,7 @@ class Player;
 using Players = std::vector<std::unique_ptr<Player>>;
 using Tiles = std::vector<std::shared_ptr<Tile>>;
 using Tileset = std::set<std::shared_ptr<Tile>>;
-using Rack = Tileset;
+using Rack = Tiles;
 using Bag = Tileset;
 
 #endif

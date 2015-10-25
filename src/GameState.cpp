@@ -53,7 +53,7 @@ void GameState::repopulateRack(int playerId) {
 void GameState::repopulateRack(int playerId, const Tileset& tiles) {
 	for (const auto& tilePtr : tiles) {
 		bag.erase(tilePtr);
-		racks[playerId].insert(tilePtr);
+		racks[playerId].push_back(tilePtr);
 	}
 }
 
@@ -85,8 +85,10 @@ void GameState::applyMoveDecision(const MoveDecision& decision) {
 }
 
 void GameState::applyExchangeDecision(const TileExchangeDecision& decision) {
+	Rack& rack = racks[turn];
 	for (const auto& tile : decision.getExchangedTiles()) {
-		racks[turn].erase(tile);
+		auto newEnd = std::remove(rack.begin(), rack.end(), tile);
+		rack.erase(newEnd);
 		hand.insert(tile);
 	}
 }
