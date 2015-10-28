@@ -32,7 +32,7 @@ GameState::GameState(const GameState& other)
 void GameState::repopulateRack(int playerId) {
 	Rack& rack = racks[playerId];
 	int count = game.getRackSize() - rack.size();
-	Tileset tiles;
+	Tiles tiles;
 
 	if (count > 0) {
 		std::vector<std::shared_ptr<Tile>> shuffledBag;
@@ -43,14 +43,14 @@ void GameState::repopulateRack(int playerId) {
 
 		while (count) {
 			auto& tilePtr = shuffledBag.back();
-			tiles.insert(tilePtr);
+			tiles.push_back(tilePtr);
 			shuffledBag.pop_back();
 		}
 	}
 	repopulateRack(playerId, tiles);
 }
 
-void GameState::repopulateRack(int playerId, const Tileset& tiles) {
+void GameState::repopulateRack(int playerId, const Tiles& tiles) {
 	for (const auto& tilePtr : tiles) {
 		bag.erase(tilePtr);
 		racks[playerId].push_back(tilePtr);

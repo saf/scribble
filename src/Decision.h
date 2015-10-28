@@ -25,13 +25,13 @@ private:
 
 class TileExchangeDecision : public Decision {
 public:
-	TileExchangeDecision(Tileset exchangedTiles);
+	TileExchangeDecision(Tiles exchangedTiles);
 
 	void applyToState(GameState& state) const override;
 
-	const Tileset& getExchangedTiles() const;
+	const Tiles& getExchangedTiles() const;
 private:
-	const Tileset exchangedTiles_;
+	const Tiles exchangedTiles_;
 };
 
 class PassDecision : public Decision {

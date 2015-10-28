@@ -37,8 +37,19 @@ protected:
 
 	Tileset getInitialBag() override;
 
-	static Tileset findTilesForPlayerRack(const GameState& state, const wchar_t* rackLetters);
-	static Tiles findTilesForPlayerMove(const GameState& state, int row, int column, Direction direction, const wchar_t* wordLetters);
+	template<typename C>
+	static std::shared_ptr<Tile> extractTile(C& tileCollection, Letter letter) {
+		auto it = tileCollection.begin();
+		while (it != tileCollection.end()) {
+			std::shared_ptr<Tile> tile = *it;
+			if ((letter == LETTER('_') && tile->isBlank()) || tile->getLetter() == letter) {
+				tileCollection.erase(it);
+				return tile;
+			}
+			++it;
+		}
+		return std::shared_ptr<Tile>(nullptr);
+	}
 };
 
 #endif /* ISOTILEGAME_H_ */

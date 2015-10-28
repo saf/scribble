@@ -17,7 +17,7 @@
 class Move {
 public:
 	Move(Coordinates start, Direction direction, Tiles tiles = Tiles(),
-			BlankAssignments blankAssignment = BlankAssignments());
+			BlankAssignments blankAssignments = BlankAssignments());
 
 	Coordinates getCoordinates() const;
 	uint getStartRow() const;

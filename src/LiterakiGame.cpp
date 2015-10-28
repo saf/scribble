@@ -106,6 +106,77 @@ int LiterakiGame::getRackSize() const {
 	return RACK_SIZE;
 }
 
+std::pair<Tiles, BlankAssignments> LiterakiGame::getMoveTiles(
+		const Segment<std::shared_ptr<Tile>>& segment, const Rack& playerRack, Word moveString) {
+	Tiles moveTiles;
+	BlankAssignments blankAssignments;
+	Rack rack = playerRack;
+
+	bool blankTile = false;
+	uint index = 0;
+
+	for (Letter letter : moveString) {
+		if (letter == LETTER('[')) {
+			blankTile = true;
+		} else if (letter == LETTER(']')) {
+			blankTile = false;
+		} else {
+			if (segment[index] == nullptr) {
+				std::shared_ptr<Tile> tile;
+				if (blankTile) {
+					tile = IsoTileGame::extractTile(rack, LETTER('_'));
+					if (tile != nullptr) {
+						blankAssignments.add(tile, letter);
+					}
+				} else {
+					tile = IsoTileGame::extractTile(rack, letter);
+				}
+				if (tile != nullptr) {
+					moveTiles.push_back(tile);
+				} else {
+					throw "Failed to find tile for player move.";
+				}
+			}
+			++index;
+		}
+	}
+	return std::make_pair(moveTiles, blankAssignments);
+}
+
+Tiles LiterakiGame::getMissingRackTiles(const Bag& gameBag, const Rack& playerRack, Word rackLetters) {
+	Bag bag = gameBag;
+	Rack rack = playerRack;
+	Tiles tiles;
+
+	for (Letter letter : rackLetters) {
+		auto tile = IsoTileGame::extractTile(rack, letter);
+		if (tile == nullptr) {
+			tile = IsoTileGame::extractTile(bag, letter);
+			if (tile != nullptr) {
+				tiles.push_back(tile);
+			} else {
+				throw "Failed to find missing tile for player rack";
+			}
+		}
+	}
+	return tiles;
+}
+
+Tiles LiterakiGame::getRackTiles(const Rack& playerRack, Word letters) {
+	Rack rack = playerRack;
+	Tiles tiles;
+
+	for (Letter letter : letters) {
+		auto tile = IsoTileGame::extractTile(rack, letter);
+		if (tile != nullptr) {
+			tiles.push_back(tile);
+		} else {
+			throw "Failed to find tile in player rack";
+		}
+	}
+	return tiles;
+}
+
 LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 	Players players;
 	players.emplace_back(new IdlePlayer());
@@ -117,13 +188,6 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 	int round = 1;
 
 	while (!stream.eof()) {
-		wchar_t rack[RACK_SIZE + 2];
-		wchar_t column;
-		int row;
-		wchar_t direction;
-		wchar_t plus;
-		std::wstring words;
-		int points;
 		std::wstring line;
 		std::getline(stream, line);
 		const wchar_t *str = line.c_str();
@@ -142,36 +206,64 @@ LiterakiGame LiterakiGame::readFromStream(std::wistream &stream) {
 			assert(readRound == round);
 		}
 
-		lineStream >> rack >> column >> row >> direction >> words >> plus >> points;
+		std::wstring rackString;
+		lineStream >> rackString;
 
-		if (lineStream.good()) {
-			/* Word move.
-			 *
-			 * There is a colon in the 'rack' string, so we need to get rid of that. */
-			rack[wcslen(rack) - 1] = L'\0';
+		assert(lineStream.good());
+		/* There is a colon in the 'rack' string, so we need to get rid of that. */
+		rackString.pop_back();
 
+		const Bag& bag = game.getCurrentState().getBag();
+		const Rack& rack = game.getCurrentState().getRacks()[turn];
+
+		Tiles missingRackTiles = getMissingRackTiles(bag, rack, rackString);
+		assert(missingRackTiles.size() + rack.size() == rackString.length());
+		if (game.stateHistory_.size() > 0) {
+			game.stateHistory_.back()->repopulateRack(turn, missingRackTiles);
+		}
+		game.currentState_->repopulateRack(turn, missingRackTiles);
+
+		if (line.find(L"L") != std::string::npos) {
+			/* End-of-game */
+			game.applyDecision(std::shared_ptr<Decision>(new PassDecision()));
+		} else if (line.find(L"+") != std::string::npos) {
+			wchar_t column;
+			int row;
+			wchar_t direction;
+			wchar_t plus;
+			std::wstring words;
+			int points;
+
+			lineStream >> column >> row >> direction >> words >> plus >> points;
 			int col = column - 'a';
+			row--;    // Row is 1-based in game logs.
 
 			size_t firstSlash = words.find_first_of(L'/');
 			std::wstring mainWord = firstSlash != std::wstring::npos ? words.substr(0, firstSlash) : words;
 
-			Tileset missingRackTiles = IsoTileGame::findTilesForPlayerRack(game.getCurrentState(), rack);
-			assert(missingRackTiles.size() + game.getCurrentState().getRacks()[turn].size() == wcslen(rack));
-			if (game.stateHistory_.size() > 0) {
-				game.stateHistory_.back()->repopulateRack(turn, missingRackTiles);
-			}
-			game.currentState_->repopulateRack(turn, missingRackTiles);
-
 			Direction dir = direction == L'+' ? Direction::VERTICAL : Direction::HORIZONTAL;
-			Tiles moveTiles = IsoTileGame::findTilesForPlayerMove(
-					game.getCurrentState(), row - 1, col, dir, mainWord.c_str()
-			);
+			const Segment<std::shared_ptr<Tile>> segment =
+					game.getCurrentState().getTiles().segmentFrom(Coordinates(row, col), dir);
+
+			Tiles moveTiles;
+			BlankAssignments blankAssignments;
+			std::tie(moveTiles, blankAssignments) = getMoveTiles(segment, rack, mainWord);
+
 			std::shared_ptr<MoveDecision> decision = std::shared_ptr<MoveDecision>(
-					new MoveDecision(Move(Coordinates(row - 1, col), dir, moveTiles))
+					new MoveDecision(Move(Coordinates(row, col), dir, moveTiles, blankAssignments))
 			);
 
 			int computedPoints = game.score(game.currentState_->getTiles(), decision->getMove());
 			assert(points == computedPoints);
+			game.applyDecision(decision);
+		} else if (line.find(L"->") != std::string::npos) {
+			std::wstring removedLetters;
+			lineStream >> removedLetters;
+			assert(lineStream.good());
+			Tiles removedTiles = getRackTiles(rack, removedLetters);
+			std::shared_ptr<TileExchangeDecision> decision = std::shared_ptr<TileExchangeDecision>(
+					new TileExchangeDecision(removedTiles)
+			);
 			game.applyDecision(decision);
 		} else {
 			game.applyDecision(std::shared_ptr<Decision>(new PassDecision()));

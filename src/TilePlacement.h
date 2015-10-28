@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-
+#include <iostream>
 #include "Basics.h"
 #include "Board.h"
 #include "Grid.h"

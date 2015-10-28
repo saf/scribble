@@ -34,6 +34,11 @@ protected:
 
 	std::unique_ptr<Board> getInitialBoard() override;
 
+	static std::pair<Tiles, BlankAssignments> getMoveTiles(const Segment<std::shared_ptr<Tile>>& segment,
+			const Rack& playerRack, Word moveString);
+	static Tiles getMissingRackTiles(const Bag& gameBag, const Rack& playerRack, Word rackLetters);
+	static Tiles getRackTiles(const Rack& playerRack, Word letters);
+
 
 private:
 	static const int RACK_SIZE;

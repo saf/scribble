@@ -43,7 +43,7 @@ class GameState {
 		bool isFinal() const;
 
 		void repopulateRack(int playerId);
-		void repopulateRack(int playerId, const Tileset& tiles);
+		void repopulateRack(int playerId, const Tiles& tiles);
 
 		std::shared_ptr<GameState> stateAfterDecision(const Decision& decision) const;
 

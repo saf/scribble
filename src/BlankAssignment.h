@@ -20,6 +20,10 @@ struct BlankAssignment {
 
 class BlankAssignments {
 public:
+	void add(std::shared_ptr<Tile> tile, Letter letter) {
+		assignments_.emplace_back(tile, letter);
+	}
+
 	void add(BlankAssignments newAssignments) {
 		std::move(newAssignments.assignments_.begin(),
 				newAssignments.assignments_.end(),

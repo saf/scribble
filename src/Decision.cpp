@@ -13,7 +13,7 @@ const Move& MoveDecision::getMove() const {
 	return move_;
 }
 
-TileExchangeDecision::TileExchangeDecision(Tileset exchangedTiles)
+TileExchangeDecision::TileExchangeDecision(Tiles exchangedTiles)
 		: exchangedTiles_(std::move(exchangedTiles)) {
 }
 
@@ -21,7 +21,7 @@ void TileExchangeDecision::applyToState(GameState& state) const {
 	state.applyExchangeDecision(*this);
 }
 
-const Tileset& TileExchangeDecision::getExchangedTiles() const {
+const Tiles& TileExchangeDecision::getExchangedTiles() const {
 	return exchangedTiles_;
 }
 
