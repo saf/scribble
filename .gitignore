@@ -1,0 +1,8 @@
+bin/
+build/
+tools/*.dat
+
+.cproject
+.project
+.settings
+

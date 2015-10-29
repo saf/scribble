@@ -1,8 +1,10 @@
-SOURCES=$(filter-out src/main.cpp,$(wildcard src/*.cpp))
-OBJECTS=$(patsubst %.cpp,%.o,$(SOURCES))
+SOURCE_DIR=src
+BUILD_DIR=build
+BIN_DIR=bin
 
-TEST_SOURCES=$(wildcard test/*.cpp)
-TEST_OBJECTS=$(patsubst %.cpp,%.o,$(TEST_SOURCES))
+SOURCES=$(filter-out $(SOURCE_DIR)/main.cpp $(SOURCE_DIR)/%Test.cpp,$(wildcard $(SOURCE_DIR)/*.cpp))
+OBJECTS=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
+OBJECT_DEPS=$(patsubst %.o,%.d,$(OBJECTS)) $(BUILD_DIR)/main.d $(BUILD_DIR)/BoardTest.d $(BUILD_DIR)/LiterakiBoardTest.d
 
 CFLAGS=-g -O0 -I src -std=c++0x
 LDFLAGS=-lboost_unit_test_framework -std=c++0x
@@ -12,19 +14,24 @@ all: bin/board-printer-test bin/scribble bin/unit-test
 test: bin/unit-test
 	$<
 
-bin/unit-test: $(OBJECTS) test/BoardTest.o | bin-dir
+Makefile: $(OBJECT_DEPS)
+
+$(BUILD_DIR)/%.d: $(SOURCE_DIR)/%.cpp | dir.$(BUILD_DIR)
+	g++ -MM -MT $*.deps -o $@ $(CFLAGS) $^
+
+-include $(OBJECT_DEPS)
+
+$(BIN_DIR)/unit-test: $(OBJECTS) $(BUILD_DIR)/BoardTest.o | dir.$(BIN_DIR)
 	g++ -o $@ $^ $(LDFLAGS)
 
-bin/board-printer-test: $(OBJECTS) test/LiterakiBoardTest.o
+$(BIN_DIR)/board-printer-test: $(OBJECTS) $(BUILD_DIR)/LiterakiBoardTest.o | dir.$(BIN_DIR)
 	g++ -o $@ $^ $(LDFLAGS) 
 
-bin/scribble: src/main.cpp $(OBJECTS) | bin-dir
+$(BIN_DIR)/scribble: $(SOURCE_DIR)/main.cpp $(OBJECTS) | dir.$(BIN_DIR)
 	g++ -o $@ $^ $(LDFLAGS) 
 
-%.o: %.cpp
-	g++ -c $(CFLAGS) -o $@ $<
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | %.deps dir.$(BUILD_DIR)
+	g++ -o $@ $(CFLAGS) -c $<
 
-bin-dir:
-	mkdir -p bin
-
-.PHONY: bin-dir 
+dir.%:
+	@mkdir -p $*
