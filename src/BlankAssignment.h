@@ -30,7 +30,11 @@ public:
 				std::back_inserter(assignments_));
 	}
 
-	Letter find(const std::shared_ptr<Tile>& tile) {
+	void popBack() {
+		assignments_.pop_back();
+	}
+
+	Letter find(const std::shared_ptr<Tile>& tile) const {
 		for (const BlankAssignment& assignment : assignments_) {
 			if (assignment.tile == tile) {
 				return assignment.letter;
@@ -38,6 +42,7 @@ public:
 		}
 		return L'_';
 	}
+
 private:
 	std::vector<BlankAssignment> assignments_;
 };

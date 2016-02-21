@@ -23,6 +23,14 @@ public:
 		return grid_.atCoords(coordinates(indexInLine));
 	}
 
+	Direction direction() const {
+		return direction_;
+	}
+
+	uint index() const {
+		return index_;
+	}
+
 	uint length() const {
 		return length_;
 	}
@@ -44,7 +52,15 @@ public:
 		return Segment<T>(*this, offset, length() - offset);
 	}
 
+	const Segment<T> suffix(uint offset) const {
+		return const_cast<Line<T>*>(this)->suffix(offset);
+	}
+
 	Segment<T> segment(uint offset, uint length) {
+		return Segment<T>(*this, offset, length);
+	}
+
+	const Segment<T> segment(uint offset, uint length) const {
 		return Segment<T>(*this, offset, length);
 	}
 
@@ -74,6 +90,10 @@ public:
 		return const_cast<const T&>((*const_cast<Segment<T>*>(this))[indexInSegment]);
 	}
 
+	Direction direction() const {
+		return line_.direction();
+	}
+
 	uint length() const {
 		return length_;
 	}
@@ -82,6 +102,15 @@ public:
 		assert(indexInSegment < length_);
 		return line_.coordinates(offset_ + indexInSegment);
 	}
+
+	Segment<T> suffix(uint offset) {
+		return Segment<T>(line_, offset_ + offset, length() - offset_ - offset);
+	}
+
+	const Segment<T> suffix(uint offset) const {
+		return const_cast<Segment<T>*>(this)->suffix(offset);
+	}
+
 private:
 	Line<T> line_;
 	uint offset_;
@@ -126,7 +155,19 @@ public:
 		return *this;
 	}
 
+	uint getRowCount() const {
+		return rowCount_;
+	}
+
+	uint getColumnCount() const {
+		return columnCount_;
+	}
+
 	T& atCoords(Coordinates coordinates) {
+		return Base::at(coordinates.row).at(coordinates.column);
+	}
+
+	const T& atCoords(Coordinates coordinates) const {
 		return Base::at(coordinates.row).at(coordinates.column);
 	}
 
@@ -138,6 +179,10 @@ public:
 			assert(index < columnCount_);
 			return Line<T>(*this, direction, index, rowCount_);
 		}
+	}
+
+	const Line<T> line(Direction direction, uint index) const {
+		return const_cast<Grid<T>*>(this)->line(direction, index);
 	}
 
 	Line<T> lineAt(Coordinates coordinates, Direction direction) {
@@ -159,6 +204,16 @@ public:
 	const Segment<T> segmentFrom(Coordinates coordinates, Direction direction) const {
 		return const_cast<Grid<T>*>(this)->segmentFrom(coordinates, direction);
 	}
+
+	void foreach(std::function<void(Coordinates, T&)> function) {
+		for (uint row = 0; row < getRowCount(); row++) {
+			for (uint col = 0; col < getColumnCount(); col++) {
+				Coordinates coords(row, col);
+				function(coords, atCoords(coords));
+			}
+		}
+	}
+
 protected:
 	using Base = std::vector<std::vector<T>>;
 	uint rowCount_;

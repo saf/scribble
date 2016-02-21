@@ -12,7 +12,7 @@ struct Coordinates {
 	}
 
 	/// At which position on a line with the specific direction are we?
-	uint offsetOnLine(Direction direction) {
+	uint offsetOnLine(Direction direction) const {
 		if (direction == Direction::HORIZONTAL) {
 			return column;
 		} else {

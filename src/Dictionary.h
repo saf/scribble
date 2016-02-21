@@ -9,6 +9,7 @@
 #define DICTIONARY_H_
 
 #include <iostream>
+#include <memory>
 
 #include "Alphabet.h"
 #include "Trie.h"
@@ -16,6 +17,7 @@
 class Dictionary {
 public:
 	Dictionary(Alphabet alphabet);
+
 	virtual ~Dictionary() {}
 
 	virtual void readFromStream(std::wistream &stream);
@@ -26,8 +28,10 @@ public:
 	virtual int getSize();
 
 protected:
+	Dictionary(std::unique_ptr<Trie> tree);
+
 	int entryCount_;
-	Trie tree_;
+	std::unique_ptr<Trie> tree_;
 };
 
 #endif /* DICTIONARY_H_ */

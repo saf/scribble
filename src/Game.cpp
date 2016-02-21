@@ -38,6 +38,10 @@ const GameState& Game::getCurrentState() {
 	return *currentState_;
 }
 
+const std::deque<std::shared_ptr<GameState>>& Game::getStateHistory() const {
+	return stateHistory_;
+}
+
 const Board& Game::getBoard() const {
 	assert(board_);
 	return *board_;

@@ -13,12 +13,14 @@ LiterakiBoardPrinter::LiterakiBoardPrinter() {}
 
 LiterakiBoardPrinter::~LiterakiBoardPrinter() {}
 
-std::wstring LiterakiBoardPrinter::getTileString(const std::shared_ptr<Tile>& tile) {
-	return BoardPrinter::getTileString(tile);
+std::wstring LiterakiBoardPrinter::getTileString(
+		const std::shared_ptr<Tile>& tile, const BlankAssignments& blanks) {
+	return BoardPrinter::getTileString(tile, blanks);
 }
 
-std::wstring LiterakiBoardPrinter::getFieldString(const Field& field, const std::shared_ptr<Tile>& tile) {
-	this->tileString = getTileString(tile);
+std::wstring LiterakiBoardPrinter::getFieldString(const Field& field,
+		const std::shared_ptr<Tile>& tile, const BlankAssignments& blanks) {
+	this->tileString = getTileString(tile, blanks);
 	field.accept(*this); /* This sets our 'fieldString' member */
 	return this->fieldString;
 }

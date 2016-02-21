@@ -12,27 +12,32 @@ BoardPrinter::BoardPrinter() {}
 
 BoardPrinter::~BoardPrinter() {}
 
-std::wstring BoardPrinter::getTileString(const std::shared_ptr<Tile>& tile) {
+std::wstring BoardPrinter::getTileString(const std::shared_ptr<Tile>& tile,
+		const BlankAssignments& blanks) {
 	std::wstring s;
-	if (tile != NULL) {
-		s.push_back(tile->getLetter());
+	if (tile != nullptr) {
+		wchar_t letter = tile->isBlank() ? blanks.find(tile) : tile->getLetter();
+		s.push_back(letter);
 	} else {
 		s = L" ";
 	}
 	return s;
 }
 
-std::wstring BoardPrinter::getFieldString(const Field& field, const std::shared_ptr<Tile>& tile) {
-	return BoardPrinter::getTileString(tile);
+std::wstring BoardPrinter::getFieldString(const Field& field,
+		const std::shared_ptr<Tile>& tile, const BlankAssignments& blanks) {
+	return BoardPrinter::getTileString(tile, blanks);
 }
 
-void BoardPrinter::printBoard(const Board& board, const TilePlacement& tiles) {
+void BoardPrinter::printBoard(const Board& board,
+		const TilePlacement& tiles, const BlankAssignments& blanks) {
 	int width = board.getWidth();
 	int height = board.getHeight();
 
 	for (int r = 0; r < height; r++) {
 		for (int c = 0; c < width; c++) {
-			std::wstring fieldString = getFieldString(board.getField(r, c), tiles[r][c]);
+			std::wstring fieldString =
+					getFieldString(board.getField(r, c), tiles[r][c], blanks);
 			std::wcout << fieldString;
 			if (c == width - 1) {
 				if (r == width - 1) {

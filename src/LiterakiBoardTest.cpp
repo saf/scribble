@@ -20,7 +20,8 @@ int main(int argc, const char **argv) {
 	if (fs.is_open()) {
 		fs.imbue(locale);
 		LiterakiGame g = LiterakiGame::readFromStream(fs);
-		printer.printBoard(g.getBoard(), g.getCurrentState().getTiles());
+		printer.printBoard(g.getBoard(), g.getCurrentState().getTiles(),
+				g.getCurrentState().getBlankAssignments());
 	} else {
 		std::cerr << "Failed to open " << argv[1] << std::endl;
 	}

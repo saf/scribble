@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <iostream>
 
-static const wchar_t kFirstBaseLetter = LETTER('A');
-static const wchar_t kLastBaseLetter = LETTER('Z');
+static const wchar_t kFirstBaseLetter = LETTER('a');
+static const wchar_t kLastBaseLetter = LETTER('z');
 static const unsigned int kBaseLetterCount = kLastBaseLetter - kFirstBaseLetter + 1;
 
 Alphabet::Alphabet(std::wstring diacritics)
@@ -17,7 +17,7 @@ unsigned int Alphabet::getLetterCount() const {
 
 unsigned int Alphabet::getIndex(Letter letter) const {
 	if (letter >= kFirstBaseLetter && letter <= kLastBaseLetter) {
-		return static_cast<unsigned int>(letter) - static_cast<unsigned int>(LETTER('A'));
+		return static_cast<unsigned int>(letter) - static_cast<unsigned int>(LETTER('a'));
 	} else {
 		size_t index = diacritics_.find_first_of(letter);
 		assert(index != std::wstring::npos);

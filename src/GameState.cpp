@@ -15,6 +15,7 @@ GameState::GameState(const Game& game, Bag bag)
 		: game(game),
 		  turn(0),
 		  tiles(game.getBoard()),
+		  blankAssignments(),
 		  bag(std::move(bag)),
 		  racks(game.getPlayerCount()),
 		  scores(game.getPlayerCount(), 0) {
@@ -24,6 +25,7 @@ GameState::GameState(const GameState& other)
 		: game(other.game),
 		  turn(other.turn),
 		  tiles(other.tiles),
+		  blankAssignments(other.blankAssignments),
 		  bag(other.bag),
 		  racks(other.racks),
 		  scores(other.scores) {
@@ -82,6 +84,7 @@ void GameState::applyMoveDecision(const MoveDecision& decision) {
 	}
 
 	tiles.applyMove(move);
+	blankAssignments.add(move.getBlankAssignments());
 }
 
 void GameState::applyExchangeDecision(const TileExchangeDecision& decision) {
@@ -130,6 +133,10 @@ const TilePlacement& GameState::getTiles() const {
 	return tiles;
 }
 
+const BlankAssignments& GameState::getBlankAssignments() const {
+	return blankAssignments;
+}
+
 const Game& GameState::getGame() const {
 	return game;
 }
@@ -147,6 +154,10 @@ bool GameState::isFinal() const {
 PlayerState::PlayerState(const std::shared_ptr<GameState> state, int playerId)
 		: state_(state),
 		  playerId_(playerId) {
+}
+
+const Game& PlayerState::getGame() const {
+	return state_->getGame();
 }
 
 const Board& PlayerState::getBoard() const {

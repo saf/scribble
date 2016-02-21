@@ -45,6 +45,7 @@ public:
 	virtual void initializeState();
 
 	const GameState& getCurrentState();
+	const std::deque<std::shared_ptr<GameState>>& getStateHistory() const;
 
 	virtual void applyDecision(const std::shared_ptr<Decision>& decision);
 	virtual void oneTurn();

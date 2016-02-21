@@ -41,9 +41,6 @@ public:
 	const Field& getField(uint row, uint col) const;
 
 private:
-	int width;  /* number of columns */
-	int height; /* number of rows */
-
 	Grid<std::unique_ptr<Field>> fields;
 	std::vector<std::vector<Tile *> > tiles;
 };

@@ -12,15 +12,19 @@
 
 Dictionary::Dictionary(Alphabet alphabet)
 		: entryCount_(0),
-		  tree_(std::move(alphabet)) {
+		  tree_(new Trie(std::move(alphabet))) {
+}
+
+Dictionary::Dictionary(std::unique_ptr<Trie> tree)
+		: entryCount_(0),
+		  tree_(std::move(tree)) {
 }
 
 void Dictionary::readFromStream(std::wistream &s) {
 	while (!s.eof()) {
-		Letter word[Trie::MAX_WORD_LENGTH];
-		s.getline(word, Trie::MAX_WORD_LENGTH);
-
-		tree_.insert(Word(&word[0]));
+		Word word;
+		std::getline(s, word);
+		tree_->insert(word);
 		entryCount_++;
 	}
 }
@@ -36,5 +40,5 @@ int Dictionary::getSize() {
 }
 
 bool Dictionary::check(const Word& word) {
-	return tree_.find(word);
+	return tree_->find(word);
 }

@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include "Decision.h"
+#include "ESPlayer.h"
 #include "Fields.h"
 #include "GameState.h"
 #include "IdlePlayer.h"

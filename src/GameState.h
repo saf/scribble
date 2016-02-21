@@ -38,6 +38,8 @@ class GameState {
 
 		const TilePlacement& getTiles() const;
 
+		const BlankAssignments& getBlankAssignments() const;
+
 		const Game& getGame() const;
 
 		bool isFinal() const;
@@ -55,6 +57,7 @@ class GameState {
 		const Game& game;
 		int turn; /* cycles through 0 ... (playerCount-1) */
 		TilePlacement tiles;
+		BlankAssignments blankAssignments;
 		Bag bag;
 		std::vector<Rack> racks;
 		std::vector<int> scores;
@@ -67,6 +70,7 @@ class PlayerState {
 	public:
 		PlayerState(std::shared_ptr<GameState> state, int playerId_);
 
+		const Game& getGame() const;
 		const Board& getBoard() const;
 		const TilePlacement& getTiles() const;
 		const Rack& getRack() const;

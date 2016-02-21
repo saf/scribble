@@ -28,7 +28,7 @@ $(BIN_DIR)/board-printer-test: $(OBJECTS) $(BUILD_DIR)/LiterakiBoardTest.o | dir
 	g++ -o $@ $^ $(LDFLAGS) 
 
 $(BIN_DIR)/scribble: $(SOURCE_DIR)/main.cpp $(OBJECTS) | dir.$(BIN_DIR)
-	g++ -o $@ $^ $(LDFLAGS) 
+	g++ -o $@ $^ $(CFLAGS) $(LDFLAGS) 
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | %.deps dir.$(BUILD_DIR)
 	g++ -o $@ $(CFLAGS) -c $<

@@ -16,8 +16,10 @@ protected:
 	std::wstring fieldString;
 	std::wstring tileString;
 
-	virtual std::wstring getTileString(const std::shared_ptr<Tile>& tile) override;
-	virtual std::wstring getFieldString(const Field& field, const std::shared_ptr<Tile>& tile) override;
+	virtual std::wstring getTileString(const std::shared_ptr<Tile>& tile,
+			const BlankAssignments& blanks) override;
+	virtual std::wstring getFieldString(const Field& field,
+			const std::shared_ptr<Tile>& tile, const BlankAssignments& blanks) override;
 public:
 	LiterakiBoardPrinter();
 	virtual ~LiterakiBoardPrinter();
